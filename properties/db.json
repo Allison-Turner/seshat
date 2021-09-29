@@ -1,0 +1,7 @@
+{
+"driver": "SQLite ODBC Driver",
+"server": "localhost",
+"name": "main",
+"user": "",
+"pwd": ""
+}
