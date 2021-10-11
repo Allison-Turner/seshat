@@ -47,7 +47,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
     print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "Password: " + pwd + "\n")
 
-    if os_type == "Ubuntu":
+    # if os_type == "Ubuntu":
         # Download
         # download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
