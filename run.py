@@ -29,10 +29,12 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     topo_choice = properties.itdk_version__topo_choice(itdkv)
     ext = properties.itdk_version__compression_extension(itdkv)
     file_loc = properties.itdk_version__file_location(itdkv)
-    download = properties.itdk_version__download(itdkv)
-    decompress = properties.itdk_version__decompress(itdkv)
+    download_new = properties.itdk_version__download(itdkv)
+    decompress_new = properties.itdk_version__decompress(itdkv)
 
     loc = home_dir + file_loc
+
+    print("IP Version: " + ipv + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "Topology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + download_new + "\nDecompress?: " + decompress_new + "\n")
 
 
     db = properties.deserialize_db(db_json)
@@ -43,7 +45,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     user = properties.db__user(db)
     pwd = properties.db__pwd(db)
 
-
+    print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "Password: " + pwd + "\n")
 
     if os_type == "Ubuntu":
         # Download
