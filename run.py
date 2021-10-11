@@ -13,6 +13,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
 
 
+  print(itdkv_json)
   itdkv = properties.deserialize_itdk_version(itdkv_json)
 
   ipv = properties.itdk_version__ip_version(itdkv)
