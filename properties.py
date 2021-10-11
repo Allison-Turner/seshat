@@ -55,11 +55,17 @@ def itdk_version__url(itdk_version):
 def itdk_version__topo_choice(itdk_version):
     return (itdk_version["topo_choice"])
 
-# def itdk_version__file_types(itdk_version):
-#     return (itdk_version["file_types"])
-
 def itdk_version__compression_extension(itdk_version):
     return (itdk_version["compression_extension"])
+
+def itdk_version__file_location(itdk_version):
+    return (itdk_version["file_location"])
+
+def itdk_version__download(itdk_version):
+    return (itdk_version["download"])
+
+def itdk_version__decompress(itdk_version):
+    return (itdk_version["decompress"])
 
 
 

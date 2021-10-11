@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 import os, subprocess, properties, log_util
 
-def ubuntu__decompress(itdkv, timestamp, loc):
+def ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext):
     # Prep log file
     decompress_log = open(loc + "decompression"+ timestamp + ".log", "a")
 
-    ipv = properties.itdk_version__ip_version(itdkv)
-    topo_choice = properties.itdk_version__topo_choice(itdkv)
-    ext = properties.itdk_version__compression_extension(itdkv)
+    # ipv = properties.itdk_version__ip_version(itdkv)
+    # topo_choice = properties.itdk_version__topo_choice(itdkv)
+    # ext = properties.itdk_version__compression_extension(itdkv)
 
     #decompress archive files
     if ext == ".bz2":

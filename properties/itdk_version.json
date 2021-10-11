@@ -5,5 +5,8 @@
 "day": 09,
 "url": "http://publicdata.caida.org/datasets/topology/ark/ipv4/itdk/",
 "topo_choice": "midar-iff",
-"compression_extension": ".bz2"
+"compression_extension": ".bz2",
+"file_location": "",
+"download": True,
+"decompress": True
 }

@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 import os, subprocess, properties, log_util
 
-def ubuntu__download(timestamp, itdkv, loc):
+def ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext):
     if not os.path.exists(loc):
         os.mkdir(loc)
 
     download_log = open(loc + "download" + timestamp + ".log", "a+")
 
 
-    ipv = properties.itdk_version__ip_version(itdkv)
-    year = properties.itdk_version__year(itdkv)
-    month = properties.itdk_version__month(itdkv)
-    day = properties.itdk_version__day(itdkv)
-    url = properties.itdk_version__url(itdkv)
-    topo_choice = properties.itdk_version__topo_choice(itdkv)
-    ext = properties.itdk_version__compression_extension(itdkv)
+    # ipv = properties.itdk_version__ip_version(itdkv)
+    # year = properties.itdk_version__year(itdkv)
+    # month = properties.itdk_version__month(itdkv)
+    # day = properties.itdk_version__day(itdkv)
+    # url = properties.itdk_version__url(itdkv)
+    # topo_choice = properties.itdk_version__topo_choice(itdkv)
+    # ext = properties.itdk_version__compression_extension(itdkv)
 
 
     if ipv==4:

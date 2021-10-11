@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import os, subprocess, properties, log_util
 
-def sqlite__connect(db):
-    driver = properties.db__driver(db)
-    server = properties.db__server(db)
-    name = properties.db__name(db)
-    user = properties.db__user(db)
-    pwd = properties.db__pwd(db)
+def sqlite__connect(driver, server, name, user, pwd):
+    # driver = properties.db__driver(db)
+    # server = properties.db__server(db)
+    # name = properties.db__name(db)
+    # user = properties.db__user(db)
+    # pwd = properties.db__pwd(db)
 
     # Connect to database
     cnxn = pyodbc.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + name + ";UID=" + user + ";PWD=" + pwd)
