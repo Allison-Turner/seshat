@@ -34,7 +34,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
     loc = home_dir + file_loc
 
-    print("IP Version: " + ipv + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "Topology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + download_new + "\nDecompress?: " + decompress_new + "\n")
+    print("IP Version: " + str(ipv) + "\nYear: " + str(year) + "\nMonth: " + str(month) + "\nDay: " + str(day) + "\nURL: " + url + "Topology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
 
 
     db = properties.deserialize_db(db_json)
@@ -49,13 +49,13 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
     if os_type == "Ubuntu":
         # Download
-        download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
+        # download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
         # Decompress
-        decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
+        # decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
 
         # Initialize database
-        cnxn = initialize_db.sqlite__connect()
+        # cnxn = initialize_db.sqlite__connect()
 
         # Read in nodes
 
