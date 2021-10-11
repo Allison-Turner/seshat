@@ -57,14 +57,16 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     user = properties.db__user(db)
     pwd = properties.db__pwd(db)
 
-    print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "Password: " + pwd + "\n")
+    print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "\nPassword: " + pwd + "\n")
 
-    # if os_type == "Ubuntu":
+    if os_type == "Ubuntu":
         # Download
-        # download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
+        if download_new:
+            download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
         # Decompress
-        # decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
+        if decompress_new or download_new:
+            decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
 
         # Initialize database
         # cnxn = initialize_db.sqlite__connect()
