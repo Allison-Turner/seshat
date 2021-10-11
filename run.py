@@ -5,55 +5,59 @@ import download, decompress, initialize_db, read_in_nodes, read_in_links
 from argparse import ArgumentParser
 
 def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
-  os_env = properties.deserialize_os_env(os_env_json)
+    print("OS env JSON file: " + os_env_json + "\n")
+    print("ITDK version JSON file: " + itdkv_json + "\n")
+    print("DB properties JSON file: " + db_json + "\n")
 
-  os_type = properties.os_env__os(os_env)
-  username = properties.os_env__username(os_env)
-  home_dir = properties.os_env__home(os_env)
-  print("OS Type: " + os_type + "\nUsername: " + username + "\nHome Directory: " + home_dir + "\n")
+    os_env = properties.deserialize_os_env(os_env_json)
 
-
-
-  print("ITDK version JSON file: " + itdkv_json + "\n")
-  itdkv = properties.deserialize_itdk_version(itdkv_json)
-
-  ipv = properties.itdk_version__ip_version(itdkv)
-  year = properties.itdk_version__year(itdkv)
-  month = properties.itdk_version__month(itdkv)
-  day = properties.itdk_version__day(itdkv)
-  url = properties.itdk_version__url(itdkv)
-  topo_choice = properties.itdk_version__topo_choice(itdkv)
-  ext = properties.itdk_version__compression_extension(itdkv)
-  file_loc = properties.itdk_version__file_location(itdkv)
-  download = properties.itdk_version__download(itdkv)
-  decompress = properties.itdk_version__decompress(itdkv)
-
-  loc = home_dir + file_loc
-
-
-  db = properties.deserialize_db(db_json)
-
-  driver = properties.db__driver(db)
-  server = properties.db__server(db)
-  name = properties.db__name(db)
-  user = properties.db__user(db)
-  pwd = properties.db__pwd(db)
+    os_type = properties.os_env__os(os_env)
+    username = properties.os_env__username(os_env)
+    home_dir = properties.os_env__home(os_env)
+    
+    print("OS Type: " + os_type + "\nUsername: " + username + "\nHome Directory: " + home_dir + "\n")
 
 
 
-  if os_type == "Ubuntu":
-      # Download
-      download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
+    itdkv = properties.deserialize_itdk_version(itdkv_json)
 
-      # Decompress
-      decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
+    ipv = properties.itdk_version__ip_version(itdkv)
+    year = properties.itdk_version__year(itdkv)
+    month = properties.itdk_version__month(itdkv)
+    day = properties.itdk_version__day(itdkv)
+    url = properties.itdk_version__url(itdkv)
+    topo_choice = properties.itdk_version__topo_choice(itdkv)
+    ext = properties.itdk_version__compression_extension(itdkv)
+    file_loc = properties.itdk_version__file_location(itdkv)
+    download = properties.itdk_version__download(itdkv)
+    decompress = properties.itdk_version__decompress(itdkv)
 
-      # Initialize database
-      cnxn = initialize_db.sqlite__connect()
+    loc = home_dir + file_loc
 
-      # Read in nodes
 
-      # Read in links
+    db = properties.deserialize_db(db_json)
+
+    driver = properties.db__driver(db)
+    server = properties.db__server(db)
+    name = properties.db__name(db)
+    user = properties.db__user(db)
+    pwd = properties.db__pwd(db)
+
+
+
+    if os_type == "Ubuntu":
+        # Download
+        download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
+
+        # Decompress
+        decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
+
+        # Initialize database
+        cnxn = initialize_db.sqlite__connect()
+
+        # Read in nodes
+
+        # Read in links
 
 
 def main():
