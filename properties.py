@@ -14,13 +14,22 @@ itdk_file_types = [".nodes", ".links", ".nodes.as", ".nodes.geo", ".ifaces"]
 
 
 def deserialize_os_env(file="properties/os_env.json"):
-    return json.load(file)
+    f = open(file)
+    deserialized = json.load(f)
+    f.close()
+    return deserialized
 
 def deserialize_itdk_version(file="properties/itdk_version.json"):
-    return json.load(file)
+    f = open(file)
+    deserialized = json.load(f)
+    f.close()
+    return deserialized
 
 def deserialize_db(file="properties/db.json"):
-    return json.load(file)
+    f = open(file)
+    deserialized = json.load(f)
+    f.close()
+    return deserialized
 
 
 
