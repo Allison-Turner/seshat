@@ -38,7 +38,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
 
 
-  if os_type is "Ubuntu":
+  if os_type == "Ubuntu":
       # Download
       download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
@@ -58,7 +58,10 @@ def main():
 
     timestamp = log_util.get_timestamp()
     # eventually make this a loop so you can do multiple editions
-    convert_itdk_edition(timestamp)
+    for file in itdk_version_jsons:
+        convert_itdk_edition(timestamp, os_env_json, file, db_json)
+
+
 
 # Set up command line argument parser
 parser = ArgumentParser(description="A program to parse CAIDA ITDK files into useful topology data structures")
