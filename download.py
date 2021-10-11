@@ -30,7 +30,7 @@ def ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ex
         download_cmd.communicate()
         log_util.log_cmd_results(download_cmd, download_log)
 
-        download_log.write("Downloading itdk-run-" + year + month + day + ".addrs" + extension + "\n")
+        download_log.write("Downloading itdk-run-" + year + month + day + ".addrs" + ext + "\n")
         download_cmd = subprocess.Popen(["/usr/bin/wget", "-a", "download" + timestamp + ".log", "-S", "-P", loc, url + year + "-" + month + "/" + "itdk-run-" + year + month + day + ".addrs" + ext ])
         download_cmd.communicate()
         log_util.log_cmd_results(download_cmd, download_log)

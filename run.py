@@ -9,6 +9,8 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     print("ITDK version JSON file: " + itdkv_json + "\n")
     print("DB properties JSON file: " + db_json + "\n")
 
+
+
     os_env = properties.deserialize_os_env(os_env_json)
 
     os_type = properties.os_env__os(os_env)
@@ -22,31 +24,27 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     itdkv = properties.deserialize_itdk_version(itdkv_json)
 
     ipv = properties.itdk_version__ip_version(itdkv)
-
     year = str(properties.itdk_version__year(itdkv))
-
     m = properties.itdk_version__month(itdkv)
     if m < 10:
         month = "0" + str(m)
     else:
         month = str(m)
-
     d = properties.itdk_version__day(itdkv)
     if d < 10:
         day = "0" + str(d)
     else:
         day = str(d)
-
     url = properties.itdk_version__url(itdkv)
     topo_choice = properties.itdk_version__topo_choice(itdkv)
     ext = properties.itdk_version__compression_extension(itdkv)
     file_loc = properties.itdk_version__file_location(itdkv)
+    loc = home_dir + file_loc
     download_new = properties.itdk_version__download(itdkv)
     decompress_new = properties.itdk_version__decompress(itdkv)
 
-    loc = home_dir + file_loc
-
     print("IP Version: " + str(ipv) + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "\nTopology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
+
 
 
     db = properties.deserialize_db(db_json)
@@ -59,13 +57,17 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
     print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "\nPassword: " + pwd + "\n")
 
+
+
     if os_type == "Ubuntu":
         # Download
         if download_new:
+            print("Downloading dataset files")
             download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
         # Decompress
         if decompress_new or download_new:
+            print("Decompressing dataset files")
             decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
 
         # Initialize database
@@ -87,12 +89,7 @@ def main():
 
 # Set up command line argument parser
 parser = ArgumentParser(description="A program to parse CAIDA ITDK files into useful topology data structures")
-# parser.add_argument("-l", "--location", dest="folder_loc", default=cim_util.itdk_folder_loc, help="location of ITDK data archive folder, up to and including the folder name")
-# parser.add_argument("-m", "--month", dest="month", default=cim_util.itdk_month, help="month of ITDK version")
-# parser.add_argument("-d", "--day", dest="day", default=cim_util.itdk_day, help="day of ITDK version")
-# parser.add_argument("-e", "--compression_ext", dest="compression_ext", default=cim_util.compression_extension, help="compression file extension for ITDK data archive files")
-# parser.add_argument("-x", "--extract_files", dest="extract_files", default=False, help="Whether the data archive files need to be decompressed")
-# parser.add_argument("-w", "--download_files", dest="download_files", default=False, help="Whether to download the data files from CAIDA's data server")
+
 parser.add_argument('-v','--itdk_version_jsons', dest="itdk_json", help="JSON file(s) describing the ITDK edition that you want to download/decompress/parse", required=False, default="properties/itdk_version.json")
 parser.add_argument('-d','--db_json', dest="db_json", help="JSON file describing the database to use for the topology", required=False, default="properties/db.json")
 parser.add_argument('-o','--os_env', dest="os_env_json", help="JSON file describing the OS and user in which this script is operating", required=False, default="properties/os_env.json")
