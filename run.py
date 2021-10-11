@@ -58,8 +58,8 @@ def main():
 
     timestamp = log_util.get_timestamp()
     # eventually make this a loop so you can do multiple editions
-    for file in itdk_version_jsons:
-        convert_itdk_edition(timestamp, os_env_json, file, db_json)
+    for file in args.itdk_version_jsons:
+        convert_itdk_edition(timestamp, args.os_env_json, file, args.db_json)
 
 
 
