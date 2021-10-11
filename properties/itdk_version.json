@@ -6,7 +6,7 @@
 "url": "http://publicdata.caida.org/datasets/topology/ark/ipv4/itdk/",
 "topo_choice": "midar-iff",
 "compression_extension": ".bz2",
-"file_location": "",
+"file_location": "/ITDK/",
 "download": True,
 "decompress": True
 }

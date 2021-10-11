@@ -22,10 +22,11 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
   url = properties.itdk_version__url(itdkv)
   topo_choice = properties.itdk_version__topo_choice(itdkv)
   ext = properties.itdk_version__compression_extension(itdkv)
-  loc = properties.itdk_version__file_location(itdkv)
+  file_loc = properties.itdk_version__file_location(itdkv)
   download = properties.itdk_version__download(itdkv)
   decompress = properties.itdk_version__decompress(itdkv)
 
+  loc = home_dir + file_loc
 
 
   db = properties.deserialize_db(db_json)
