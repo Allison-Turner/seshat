@@ -74,8 +74,8 @@ parser = ArgumentParser(description="A program to parse CAIDA ITDK files into us
 # parser.add_argument("-e", "--compression_ext", dest="compression_ext", default=cim_util.compression_extension, help="compression file extension for ITDK data archive files")
 # parser.add_argument("-x", "--extract_files", dest="extract_files", default=False, help="Whether the data archive files need to be decompressed")
 # parser.add_argument("-w", "--download_files", dest="download_files", default=False, help="Whether to download the data files from CAIDA's data server")
-parser.add_argument('-v','--itdk_version_jsons', dest="itdk_jsons", help="JSON file(s) describing the ITDK edition that you want to download/decompress/parse", required=False, default="/properties/itdk_version.json")
-parser.add_argument('-d','--db_json', dest="db_json", help="JSON file describing the database to use for the topology", required=False, default="/properties/db.json")
-parser.add_argument('-o','--os_env', dest="os_env_json", help="JSON file describing the OS and user in which this script is operating", required=False, default="/properties/os_env.json")
+parser.add_argument('-v','--itdk_version_jsons', dest="itdk_jsons", help="JSON file(s) describing the ITDK edition that you want to download/decompress/parse", required=False, default="properties/itdk_version.json")
+parser.add_argument('-d','--db_json', dest="db_json", help="JSON file describing the database to use for the topology", required=False, default="properties/db.json")
+parser.add_argument('-o','--os_env', dest="os_env_json", help="JSON file describing the OS and user in which this script is operating", required=False, default="properties/os_env.json")
 
 main()
