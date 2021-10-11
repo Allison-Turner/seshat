@@ -41,7 +41,7 @@ def os_env__username(os_env):
     return (os_env["username"])
 
 def os_env__home(os_env):
-    return os.path.expanduser("~" + os_env__username())
+    return os.path.expanduser("~" + os_env__username(os_env))
 
 
 
