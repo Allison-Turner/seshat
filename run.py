@@ -22,9 +22,21 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     itdkv = properties.deserialize_itdk_version(itdkv_json)
 
     ipv = properties.itdk_version__ip_version(itdkv)
-    year = properties.itdk_version__year(itdkv)
-    month = properties.itdk_version__month(itdkv)
-    day = properties.itdk_version__day(itdkv)
+
+    year = str(properties.itdk_version__year(itdkv))
+
+    m = properties.itdk_version__month(itdkv)
+    if m < 10:
+        month = "0" + str(m)
+    else:
+        month = str(m)
+
+    d = properties.itdk_version__day(itdkv)
+    if d < 10:
+        day = "0" + str(d)
+    else:
+        day = str(d)
+
     url = properties.itdk_version__url(itdkv)
     topo_choice = properties.itdk_version__topo_choice(itdkv)
     ext = properties.itdk_version__compression_extension(itdkv)
@@ -34,7 +46,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
     loc = home_dir + file_loc
 
-    print("IP Version: " + str(ipv) + "\nYear: " + str(year) + "\nMonth: " + str(month) + "\nDay: " + str(day) + "\nURL: " + url + "Topology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
+    print("IP Version: " + str(ipv) + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "\nTopology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
 
 
     db = properties.deserialize_db(db_json)
