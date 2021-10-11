@@ -7,9 +7,9 @@ from argparse import ArgumentParser
 def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
   os_env = properties.deserialize_os_env(os_env_json)
 
-  os_type = properties.os_env__os()
-  username = properties.os_env__username()
-  home_dir = properties.os_env__home()
+  os_type = properties.os_env__os(os_env)
+  username = properties.os_env__username(os_env)
+  home_dir = properties.os_env__home(os_env)
 
 
 
