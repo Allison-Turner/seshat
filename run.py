@@ -5,9 +5,9 @@ import download, decompress, initialize_db, read_in_nodes, read_in_links
 from argparse import ArgumentParser
 
 def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
-    print("OS env JSON file: " + os_env_json + "\n")
-    print("ITDK version JSON file: " + itdkv_json + "\n")
-    print("DB properties JSON file: " + db_json + "\n")
+    # print("OS env JSON file: " + os_env_json + "\n")
+    # print("ITDK version JSON file: " + itdkv_json + "\n")
+    # print("DB properties JSON file: " + db_json + "\n")
 
 
 
@@ -17,7 +17,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     username = properties.os_env__username(os_env)
     home_dir = properties.os_env__home(os_env)
 
-    print("OS Type: " + os_type + "\nUsername: " + username + "\nHome Directory: " + home_dir + "\n")
+    # print("OS Type: " + os_type + "\nUsername: " + username + "\nHome Directory: " + home_dir + "\n")
 
 
 
@@ -43,7 +43,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     download_new = properties.itdk_version__download(itdkv)
     decompress_new = properties.itdk_version__decompress(itdkv)
 
-    print("IP Version: " + str(ipv) + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "\nTopology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
+    # print("IP Version: " + str(ipv) + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "\nTopology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
 
 
 
@@ -55,7 +55,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     user = properties.db__user(db)
     pwd = properties.db__pwd(db)
 
-    print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "\nPassword: " + pwd + "\n")
+    # print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "\nPassword: " + pwd + "\n")
 
 
 
@@ -71,14 +71,15 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
             decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
 
         # Initialize database
-        cnxn = initialize_db.sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
-        # initialize_db.create_schema(cnxn.cursor(), user, day, month, year, ipv)
-        initialize_db.sqlite__create_schema(cnxn.cursor(), user, day, month, year, ipv)
-        cnxn.commit()
+        if "SQLite3" in driver:
+            db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
+            cnxn = initialize_db.sqlite__connect(loc, db_name)
+            initialize_db.sqlite__create_schema(cnxn)
 
-        # Read in nodes
+            # Read in nodes
+            read_in_nodes.sqlite3__read_in_nodes(cnxn, loc, topo_choice, ipv)
 
-        # Read in links
+            # Read in links
 
 
 def main():

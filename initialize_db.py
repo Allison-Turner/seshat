@@ -1,12 +1,8 @@
 #!/usr/bin/python3
 import os, subprocess, pyodbc, properties, log_util, sqlite3
 
-def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd):
-
-    db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
+def sqlite__connect(loc, db_name):
     db_file = loc + db_name + ".db"
-
-    print("DB File: " + db_file)
 
     # Connect to database
     cnxn = sqlite3.connect(db_file)
@@ -16,7 +12,8 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
 
 
 
-def sqlite__create_schema(cursor, user, day, month, year, ipv):
+def sqlite__create_schema(cnxn):
+    cursor = cnxn.cursor()
 
     # Create tables
     cursor.execute("CREATE TABLE IF NOT EXISTS map_address_to_node(" +
@@ -43,6 +40,8 @@ def sqlite__create_schema(cursor, user, day, month, year, ipv):
     as_number integer
     );
     """);
+
+    cnxn.commit()
 
 
 
