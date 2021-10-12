@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import os, subprocess, pyodbc, properties, log_util, sqlite3
 
-def sqlite__connect(driver, server, name, user, pwd):
+def sqlite__connect(day, month, year, ipv, driver, server, name, user, pwd):
     # driver = properties.db__driver(db)
     # server = properties.db__server(db)
     # name = properties.db__name(db)
