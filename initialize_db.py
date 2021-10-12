@@ -8,16 +8,20 @@ def sqlite__connect(day, month, year, ipv, driver, server, name, user, pwd):
     # user = properties.db__user(db)
     # pwd = properties.db__pwd(db)
 
-    db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".db"
-
+    db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
+    db_file = db_name + ".db"
+    
     # Connect to database
-    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_name + ";UID=" + user + ";PWD=" + pwd)
+    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_file + ";UID=" + user + ";PWD=" + pwd)
     #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
     #cnxn.setencoding(encoding='utf-8')
+    cursor = cnxn.cursor()
+    cursor.execute("ATTACH " + db_file + " AS " + db_name + ";")
 
     return cnxn
 
 def sqlite__create_schema(cursor, user, day, month, year, ipv):
+
     # Create schemas and tables
     cursor.execute("CREATE TABLE ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".map_address_to_node(" +
     """(
