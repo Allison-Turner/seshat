@@ -6,14 +6,20 @@ from argparse import ArgumentParser
 
 def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
+    # Read JSON file for host OS metadata
     os_env = properties.deserialize_os_env(os_env_json)
+
+    # Unfold host OS environment dictionary
     os_type = properties.os_env__os(os_env)
     username = properties.os_env__username(os_env)
     home_dir = properties.os_env__home(os_env)
 
 
 
+    # Read JSON file for target ITDK edition
     itdkv = properties.deserialize_itdk_version(itdkv_json)
+
+    # Unfold ITDK edition dictionary
     ipv = properties.itdk_version__ip_version(itdkv)
     year = str(properties.itdk_version__year(itdkv))
     m = properties.itdk_version__month(itdkv)
@@ -36,7 +42,10 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
 
 
+    # Read JSON file for database metadata
     db = properties.deserialize_db(db_json)
+
+    # Unfold DB metadata dictionary
     driver = properties.db__driver(db)
     server = properties.db__server(db)
     name = properties.db__name(db)
@@ -57,24 +66,25 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
             if ext == ".bz2":
                 decompress.bzip2__decompress(timestamp, loc, ipv, topo_choice)
 
-        # Initialize database
-        if "SQLite3" in driver:
-            db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
-            cnxn = initialize_db.sqlite__connect(loc, db_name)
-            initialize_db.sqlite__create_schema(cnxn)
+    # Initialize database
+    if "SQLite3" in driver:
+        db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
+        cnxn = initialize_db.sqlite__connect(loc, db_name)
+        initialize_db.sqlite__create_schema(cnxn)
 
-            # Read in nodes
-            read_in_nodes.sqlite3__read_in_nodes(cnxn, loc, topo_choice, ipv)
+        # Read in nodes
+        read_in_nodes.sqlite3__read_in_nodes(cnxn, loc, topo_choice, ipv)
 
-            # Read in links
+        # Read in links
 
-            cnxn.close()
+        cnxn.close()
 
 
 def main():
     args = parser.parse_args()
 
     timestamp = log_util.get_timestamp()
+    
     # eventually make this a loop so you can do multiple editions
     convert_itdk_edition(timestamp, args.os_env_json, args.itdk_json, args.db_json)
 
