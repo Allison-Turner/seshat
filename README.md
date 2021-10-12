@@ -1,18 +1,31 @@
 # usable-itdk
 Parse CAIDA ITDK files into a database
 
-## properties.py
+## Requirements
 
-### Deserializing JSON Files
+### pyodbc
+Python package for communicating with databases
+[PyPI Page](https://pypi.org/project/pyodbc/)
+[Installation](https://github.com/mkleehammer/pyodbc/wiki/Install)
+
+### SQLite 
+```
+sudo apt install libsqliteodbc
+```
+
+## Files
+### properties.py
+
+#### Deserializing JSON Files
 * deserialize_os_env(file="properties/os_env.json")
 
 * deserialize_itdk_version(file="properties/itdk_version.json")
 
 * deserialize_db(file="properties/db.json")
 
-### Wrapper Functions to Extract Properties
+#### Wrapper Functions to Extract Properties
 
-#### os_env
+##### os_env
 * os_env__os(os_env)
 
 * os_env__username(os_env)
@@ -21,7 +34,7 @@ Parse CAIDA ITDK files into a database
 ** Get the full $HOME path for the username given
 ** Yields string
 
-#### itdk_version
+##### itdk_version
 * itdk_version__ip_version(itdk_version)
 
 * itdk_version__year(itdk_version)
@@ -42,7 +55,7 @@ Parse CAIDA ITDK files into a database
 
 * itdk_version__decompress(itdk_version)
 
-#### db
+##### db
 * db__driver(db)
 
 * db__server(db)
@@ -53,7 +66,7 @@ Parse CAIDA ITDK files into a database
 
 * db__pwd(db)
 
-### properties/db.json
+#### properties/db.json
 
 * driver
 ** type: string
@@ -70,7 +83,7 @@ Parse CAIDA ITDK files into a database
 * pwd
 ** type: string
 
-### properties/itdk_version.json
+#### properties/itdk_version.json
 
 * ip_version
 
@@ -89,7 +102,7 @@ Parse CAIDA ITDK files into a database
 * compression_extension
 ** type: string
 
-### properties/os_env.json
+#### properties/os_env.json
 
 * os
 ** type: string
@@ -97,16 +110,16 @@ Parse CAIDA ITDK files into a database
 * username
 ** type: string
 
-## log_util.py
+### log_util.py
 
-## parse_util.py
+### parse_util.py
 
-## download.py
+### download.py
 
-## decompress.py
+### decompress.py
 
-## initialize_db.py
+### initialize_db.py
 
-## read_in_nodes.py
+### read_in_nodes.py
 
-## read_in_links.py
+### read_in_links.py
