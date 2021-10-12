@@ -8,8 +8,10 @@ def sqlite__connect(driver, server, name, user, pwd):
     # user = properties.db__user(db)
     # pwd = properties.db__pwd(db)
 
+    db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".db"
+
     # Connect to database
-    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + name + ";UID=" + user + ";PWD=" + pwd)
+    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_name + ";UID=" + user + ";PWD=" + pwd)
     #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
     #cnxn.setencoding(encoding='utf-8')
 
