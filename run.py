@@ -5,24 +5,15 @@ import download, decompress, initialize_db, read_in_nodes, read_in_links
 from argparse import ArgumentParser
 
 def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
-    # print("OS env JSON file: " + os_env_json + "\n")
-    # print("ITDK version JSON file: " + itdkv_json + "\n")
-    # print("DB properties JSON file: " + db_json + "\n")
-
-
 
     os_env = properties.deserialize_os_env(os_env_json)
-
     os_type = properties.os_env__os(os_env)
     username = properties.os_env__username(os_env)
     home_dir = properties.os_env__home(os_env)
 
-    # print("OS Type: " + os_type + "\nUsername: " + username + "\nHome Directory: " + home_dir + "\n")
-
 
 
     itdkv = properties.deserialize_itdk_version(itdkv_json)
-
     ipv = properties.itdk_version__ip_version(itdkv)
     year = str(properties.itdk_version__year(itdkv))
     m = properties.itdk_version__month(itdkv)
@@ -43,19 +34,14 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
     download_new = properties.itdk_version__download(itdkv)
     decompress_new = properties.itdk_version__decompress(itdkv)
 
-    # print("IP Version: " + str(ipv) + "\nYear: " + year + "\nMonth: " + month + "\nDay: " + day + "\nURL: " + url + "\nTopology Choice: " + topo_choice + "\nExtension: " + ext + "\nFile Path: " + loc + "\nDownload?: " + str(download_new) + "\nDecompress?: " + str(decompress_new) + "\n")
-
 
 
     db = properties.deserialize_db(db_json)
-
     driver = properties.db__driver(db)
     server = properties.db__server(db)
     name = properties.db__name(db)
     user = properties.db__user(db)
     pwd = properties.db__pwd(db)
-
-    # print("Driver: " + driver + "\nServer: " + server + "\nName: " + name + "\nUser: " + user + "\nPassword: " + pwd + "\n")
 
 
 
@@ -63,12 +49,13 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
         # Download
         if download_new:
             print("Downloading dataset files")
-            download.ubuntu__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
+            download.bash_wget__download(timestamp, loc, ipv, year, month, day, url, topo_choice, ext)
 
         # Decompress
         if decompress_new or download_new:
             print("Decompressing dataset files")
-            decompress.ubuntu__decompress(timestamp, loc, ipv, topo_choice, ext)
+            if ext == ".bz2":
+                decompress.bzip2__decompress(timestamp, loc, ipv, topo_choice)
 
         # Initialize database
         if "SQLite3" in driver:

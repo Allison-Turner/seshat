@@ -1,7 +1,7 @@
 {
 "driver": "SQLite3 ODBC Driver",
-"server": "localhost",
-"name": "main.db",
-"user": "test",
-"pwd": "test"
+"server": "",
+"name": "",
+"user": "",
+"pwd": ""
 }

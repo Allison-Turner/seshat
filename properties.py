@@ -1,14 +1,6 @@
 #!/usr/bin/python3
 import os, json
 
-#os_env = json.load("properties/os_env.json")
-#itdk_version = json.load("properties/itdk_version.json")
-#db = json.load("properties/db.json")
-
-
-# itdk_folder_loc = home + "/Downloads/ITDK-" + itdk_year + "-" + itdk_month + "/"
-# itdk_folder_loc = "/media/" + user + "/Backup Plus/ITDK-" + itdk_year + "-" + itdk_month + "/"
-
 itdk_file_types = [".nodes", ".links", ".nodes.as", ".nodes.geo", ".ifaces"]
 
 
@@ -30,6 +22,32 @@ def deserialize_db(file="properties/db.json"):
     deserialized = json.load(f)
     f.close()
     return deserialized
+
+
+
+def print_os_env(os_env):
+    print("OS Type: " + os_env__os(os_env))
+    print("Username: " + os_env__username(os_env))
+    print("Home Directory: " + os_env__home(os_env))
+
+def print_itdk_version_metadata(itdk_version):
+    print("IP Version: " + str(itdk_version__ip_version(itdk_version)))
+    print("Year: " + str(itdk_version__year(itdk_version)))
+    print("Month: " + str(itdk_version__month(itdk_version)))
+    print("Day: " + str(itdk_version__day(itdk_version)))
+    print("URL: " + itdk_version__url(itdk_version))
+    print("Topology Choice: " + itdk_version__topo_choice(itdk_version))
+    print("Compression Extension: " + itdk_version__compression_extension(itdk_version))
+    print("File Location: " + itdk_version__file_location(itdk_version))
+    print("Download?: " + str(itdk_version__download(itdk_version)))
+    print("Decompress?: " + str(itdk_version__decompress(itdk_version)))
+
+def print_db(db):
+    print("Driver: " + db__driver(db))
+    print("Server: " + db__server(db))
+    print("DB Name: " + db__name(db))
+    print("User: " + db__user(db))
+    print("Password: " + db__pwd(db))
 
 
 

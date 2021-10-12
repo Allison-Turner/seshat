@@ -1,16 +1,8 @@
 #!/usr/bin/python3
-import os, re, subprocess
-from time import strftime,localtime
+import re, properties, parse_util
 
-def debian__read_in_links(itdkv, loc, cursor):
-    ipv = properties.itdk_version__ip_version(itdkv)
-    year = properties.itdk_version__year(itdkv)
-    month = properties.itdk_version__month(itdkv)
-    day = properties.itdk_version__day(itdkv)
-    url = properties.itdk_version__url(itdkv)
-    topo_choice = properties.itdk_version__topo_choice(itdkv)
-    ext = properties.itdk_version__compression_extension(itdkv)
-
+def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
+    cursor = cnxn.cursor()
 
     links_file = open(loc + topo_choice + properties.itdk_file_types[1], "r")
 
@@ -23,6 +15,7 @@ def debian__read_in_links(itdkv, loc, cursor):
             n1_addr = None
 
             tokens = re.split("\s", line)
+
             for token in tokens:
                 if parse_util.node_id_pattern.match(token):
                     print()
@@ -50,7 +43,7 @@ def debian__read_in_links(itdkv, loc, cursor):
                             n_ID = parse_util.node_id_pattern.search(token)
                             addr = token[n_ID.end() + 2:]
                             ID = n_ID.group()
-                            cursor.execute("INSERT INTO " + day + "-" + month + "-" + year + "_" + "ipv" + ipv + "_topology.map_link_to_nodes (link_id, node_id_1, address_1, node_id_2, address_2) VALUES (?, );", (link_ID, ))
+                            cursor.execute("INSERT INTO map_link_to_nodes (link_id, node_id_1, address_1, node_id_2, address_2) VALUES (?, );", (link_ID, ))
                             print()
 
                     elif parse_util.ipv6_pattern.match(token):
