@@ -3,39 +3,99 @@ Parse CAIDA ITDK files into a database
 
 ## properties.py
 
+### Deserializing JSON Files
+* deserialize_os_env(file="properties/os_env.json")
+
+* deserialize_itdk_version(file="properties/itdk_version.json")
+
+* deserialize_db(file="properties/db.json")
+
+### Wrapper Functions to Extract Properties
+
+#### os_env
+* os_env__os(os_env)
+
+* os_env__username(os_env)
+
+* os_env__home(os_env)
+** Get the full $HOME path for the username given
+** Yields string
+
+#### itdk_version
+* itdk_version__ip_version(itdk_version)
+
+* itdk_version__year(itdk_version)
+
+* itdk_version__month(itdk_version)
+
+* itdk_version__day(itdk_version)
+
+* itdk_version__url(itdk_version)
+
+* itdk_version__topo_choice(itdk_version)
+
+* itdk_version__compression_extension(itdk_version)
+
+* itdk_version__file_location(itdk_version)
+
+* itdk_version__download(itdk_version)
+
+* itdk_version__decompress(itdk_version)
+
+#### db
+* db__driver(db)
+
+* db__server(db)
+
+* db__name(db)
+
+* db__user(db)
+
+* db__pwd(db)
+
 ### properties/db.json
 
-#### driver
+* driver
+** type: string
 
-#### server
+* server
+** type: string
 
-#### name
+* name
+** type: string
 
-#### user
+* user
+** type: string
 
-#### pwd
+* pwd
+** type: string
 
 ### properties/itdk_version.json
 
-#### ip_version
+* ip_version
 
-#### year
+* year
 
-#### month
+* month
 
-#### day
+* day
 
-#### url
+* url
+** type: string
 
-#### topo_choice
+* topo_choice
+** type: string
 
-#### compression_extension
+* compression_extension
+** type: string
 
 ### properties/os_env.json
 
-#### os
+* os
+** type: string
 
-#### username
+* username
+** type: string
 
 ## log_util.py
 

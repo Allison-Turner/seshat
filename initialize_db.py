@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, subprocess, properties, log_util
+import os, subprocess, pyodbc, properties, log_util
 
 def sqlite__connect(driver, server, name, user, pwd):
     # driver = properties.db__driver(db)
@@ -16,13 +16,13 @@ def sqlite__connect(driver, server, name, user, pwd):
     return cnxn
 
 
-def create_schema(cursor, db, itdkv):
-    user = properties.db__user(db)
+def create_schema(cursor, user, day, month, year, ipv):
+    # user = properties.db__user(db)
 
-    ipv = properties.itdk_version__ip_version(itdkv)
-    year = properties.itdk_version__year(itdkv)
-    month = properties.itdk_version__month(itdkv)
-    day = properties.itdk_version__day(itdkv)
+    # ipv = properties.itdk_version__ip_version(itdkv)
+    # year = properties.itdk_version__year(itdkv)
+    # month = properties.itdk_version__month(itdkv)
+    # day = properties.itdk_version__day(itdkv)
 
     # Create schemas and tables
     cursor.execute("CREATE SCHEMA IF NOT EXISTS " + day + "-" + month + "-" + year + "_" + "ipv" + ipv + "_topology AUTHORIZATION " + user +

@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 import os, re, subprocess, properties, parse_util
 
-def debian__read_in_nodes(itdkv, loc, cursor):
+def debian__read_in_nodes(cursor, loc, topo_choice, day, month, year, ipv):
 
-    ipv = properties.itdk_version__ip_version(itdkv)
-    year = properties.itdk_version__year(itdkv)
-    month = properties.itdk_version__month(itdkv)
-    day = properties.itdk_version__day(itdkv)
-    topo_choice = properties.itdk_version__topo_choice(itdkv)
+    # ipv = properties.itdk_version__ip_version(itdkv)
+    # year = properties.itdk_version__year(itdkv)
+    # month = properties.itdk_version__month(itdkv)
+    # day = properties.itdk_version__day(itdkv)
+    # topo_choice = properties.itdk_version__topo_choice(itdkv)
 
     # Open nodes file to begin extracting node objects
     nodes_file = open(loc + topo_choice + properties.itdk_file_types[0], "r")

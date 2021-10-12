@@ -2,6 +2,6 @@
 "driver": "SQLite ODBC Driver",
 "server": "localhost",
 "name": "main",
-"user": "",
-"pwd": ""
+"user": "test",
+"pwd": "test"
 }
