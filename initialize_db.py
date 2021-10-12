@@ -20,6 +20,8 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
 
     return cnxn
 
+
+
 def sqlite__create_schema(cursor, user, day, month, year, ipv):
 
     # Create schemas and tables
