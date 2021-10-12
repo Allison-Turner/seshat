@@ -1,5 +1,13 @@
 # usable-itdk
-Parse CAIDA ITDK files into a database
+Parse [CAIDA ITDK](https://www.caida.org/catalog/datasets/internet-topology-data-kit/) files into a database
+
+## Notes
+
+SQLite does not require pyodbc, since Python 3 has built-in support via the [sqlite3 package](https://docs.python.org/3/library/sqlite3.html)
+
+pyodbc not currently functional because I need to spend more time on figuring out the drivers.
+
+Currently, a plain ./run.py will successfully download, decompress, and parse the .nodes file. Parser for .links is in progress.
 
 ## Files
 ### properties.py
@@ -102,8 +110,10 @@ Functions to generate a timestamp for the current run's logs, and to pull STDOUT
 Defines regex for ITDK nodes and links, IP addresses (v4 or v6), etc.
 
 ### download.py
+Downloads all files of target ITDK edition from CAIDA's dataset download site into the specified file location.
 
 ### decompress.py
+Decompresses ITDK files. Currently only implements .bz2 decompression, can add more as I come across other compression types in the archive.
 
 ### initialize_db.py
 Functions for initializing a connection to the target DB and creating the schema
