@@ -81,6 +81,8 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
             # Read in links
 
+            cnxn.close()
+
 
 def main():
     args = parser.parse_args()
