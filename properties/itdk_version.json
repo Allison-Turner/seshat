@@ -7,6 +7,6 @@
 "topo_choice": "midar-iff",
 "compression_extension": ".bz2",
 "file_location": "/ITDK/",
-"download": false,
-"decompress": false
+"download": true,
+"decompress": true
 }
