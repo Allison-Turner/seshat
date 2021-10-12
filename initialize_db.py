@@ -14,9 +14,10 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
     print("DB File: " + db_file)
 
     # Connect to database
-    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_file + ";UID=" + user + ";PWD=" + pwd)
+    # cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_file + ";UID=" + user + ";PWD=" + pwd)
     #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
     #cnxn.setencoding(encoding='utf-8')
+    cnxn = sqlite3.connect(db_file)
     cursor = cnxn.cursor()
     cursor.execute("ATTACH DATABASE " + db_file + " AS " + db_name + ";")
 
