@@ -72,7 +72,8 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
 
         # Initialize database
         cnxn = initialize_db.sqlite__connect(driver, server, name, user, pwd)
-        initialize_db.create_schema(cnxn.cursor(), user, day, month, year, ipv)
+        # initialize_db.create_schema(cnxn.cursor(), user, day, month, year, ipv)
+        initialize_db.sqlite__create_schema(cnxn.cursor(), user, day, month, year, ipv)
 
         # Read in nodes
 

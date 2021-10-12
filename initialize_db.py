@@ -15,6 +15,31 @@ def sqlite__connect(driver, server, name, user, pwd):
 
     return cnxn
 
+def sqlite__create_schema(cursor, user, day, month, year, ipv):
+    # Create schemas and tables
+    cursor.execute(
+    "CREATE TABLE " + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_address_to_node(" +
+    """(
+    address inet,
+    node_id integer
+    )
+    """ +
+    "CREATE TABLE" + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_link_to_nodes(" +
+    """
+    link_id integer,
+    node_id_1 integer,
+    address_1 inet, -- optional
+    node_id_2 integer,
+    address_2 inet, -- optional
+    relationship text
+    )
+    """ +
+    "CREATE TABLE" + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_node_to_asn(" +
+    """
+    node_id integer,
+    as_number integer
+    );
+    """);
 
 def create_schema(cursor, user, day, month, year, ipv):
     # user = properties.db__user(db)
