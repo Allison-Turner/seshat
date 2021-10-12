@@ -19,7 +19,7 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
     #cnxn.setencoding(encoding='utf-8')
     cnxn = sqlite3.connect(db_file)
     cursor = cnxn.cursor()
-    cursor.execute("ATTACH DATABASE " + db_file + " AS " + db_name + ";")
+    cursor.execute("ATTACH DATABASE \'" + db_file + "\' AS " + db_name + ";")
 
     return cnxn
 
