@@ -25,7 +25,7 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
 
 
 
-def sqlite__create_schema(cursor, user, day, month, year, ipv):
+def sqlite__create_schema1(cursor, user, day, month, year, ipv):
 
     # Create schemas and tables
     cursor.execute("CREATE TABLE map_address_to_node(" +
@@ -53,7 +53,7 @@ def sqlite__create_schema(cursor, user, day, month, year, ipv):
     """);
     cursor.commit()
 
-def sqlite__create_schema1(cursor, user, day, month, year, ipv):
+def sqlite__create_schema(cursor, user, day, month, year, ipv):
 
     # Create schemas and tables
     cursor.execute("CREATE TABLE ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".map_address_to_node(" +
