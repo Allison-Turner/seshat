@@ -11,6 +11,8 @@ def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd)
     db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
     db_file = loc + db_name + ".db"
 
+    print("DB File: " + db_file)
+
     # Connect to database
     cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_file + ";UID=" + user + ";PWD=" + pwd)
     #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
