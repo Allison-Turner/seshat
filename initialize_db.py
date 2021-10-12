@@ -17,13 +17,13 @@ def sqlite__connect(driver, server, name, user, pwd):
 
 def sqlite__create_schema(cursor, user, day, month, year, ipv):
     # Create schemas and tables
-    cursor.execute("CREATE TABLE ITDK_" + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_address_to_node(" +
+    cursor.execute("CREATE TABLE ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".map_address_to_node(" +
     """(
     address inet,
     node_id integer
     );
     """);
-    cursor.execute("CREATE TABLE ITDK_" + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_link_to_nodes(" +
+    cursor.execute("CREATE TABLE ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".map_link_to_nodes(" +
     """
     link_id integer,
     node_id_1 integer,
@@ -34,7 +34,7 @@ def sqlite__create_schema(cursor, user, day, month, year, ipv):
     );
     """);
 
-    cursor.execute("CREATE TABLE ITDK_" + day + "-" + month + "-" + year + "_ipv" + str(ipv) + ".map_node_to_asn(" +
+    cursor.execute("CREATE TABLE ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv) + ".map_node_to_asn(" +
     """
     node_id integer,
     as_number integer
