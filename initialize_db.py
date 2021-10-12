@@ -25,7 +25,7 @@ def create_schema(cursor, user, day, month, year, ipv):
     # day = properties.itdk_version__day(itdkv)
 
     # Create schemas and tables
-    cursor.execute("CREATE SCHEMA IF NOT EXISTS " + day + "-" + month + "-" + year + "_" + "ipv" + ipv + "_topology AUTHORIZATION " + user +
+    cursor.execute("CREATE SCHEMA IF NOT EXISTS " + day + "-" + month + "-" + year + "_" + "ipv" + str(ipv) + "_topology AUTHORIZATION " + user +
     """
       CREATE TABLE map_address_to_node(
         address inet,
