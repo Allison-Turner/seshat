@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, subprocess, pyodbc, properties, log_util
+import os, subprocess, pyodbc, properties, log_util, sqlite3
 
 def sqlite__connect(driver, server, name, user, pwd):
     # driver = properties.db__driver(db)
@@ -9,9 +9,9 @@ def sqlite__connect(driver, server, name, user, pwd):
     # pwd = properties.db__pwd(db)
 
     # Connect to database
-    cnxn = pyodbc.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + name + ";UID=" + user + ";PWD=" + pwd)
-    cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
-    cnxn.setencoding(encoding='utf-8')
+    cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + name + ";UID=" + user + ";PWD=" + pwd)
+    #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
+    #cnxn.setencoding(encoding='utf-8')
 
     return cnxn
 
