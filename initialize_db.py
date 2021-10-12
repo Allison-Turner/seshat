@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import os, subprocess, pyodbc, properties, log_util, sqlite3
 
-def sqlite__connect(day, month, year, ipv, driver, server, name, user, pwd):
+def sqlite__connect(loc, day, month, year, ipv, driver, server, name, user, pwd):
     # driver = properties.db__driver(db)
     # server = properties.db__server(db)
     # name = properties.db__name(db)
@@ -9,14 +9,14 @@ def sqlite__connect(day, month, year, ipv, driver, server, name, user, pwd):
     # pwd = properties.db__pwd(db)
 
     db_name = "ITDK_" + day + "_" + month + "_" + year + "_ipv" + str(ipv)
-    db_file = db_name + ".db"
-    
+    db_file = loc + db_name + ".db"
+
     # Connect to database
     cnxn = sqlite3.connect("DRIVER={" + driver + "};SERVER=" + server + ";DATABASE=" + db_file + ";UID=" + user + ";PWD=" + pwd)
     #cnxn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
     #cnxn.setencoding(encoding='utf-8')
     cursor = cnxn.cursor()
-    cursor.execute("ATTACH " + db_file + " AS " + db_name + ";")
+    cursor.execute("ATTACH DATABASE " + db_file + " AS " + db_name + ";")
 
     return cnxn
 
