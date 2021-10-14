@@ -9,8 +9,8 @@ link_id_regex = "L([0-9]+)"
 node_id_pattern = re.compile(node_id_regex)
 link_id_pattern = re.compile(link_id_regex)
 
-link_entry_prefix = re.compile("\Alink " + link_id_regex)
-node_entry_prefix = re.compile("\Anode " + node_id_regex)
+link_entry_prefix = re.compile("\Alink " + link_id_regex + ":")
+node_entry_prefix = re.compile("\Anode " + node_id_regex + ":")
 
 # IPv4 and IPv6 address Regular Expressions (source: https://gist.github.com/mnordhoff/2213179 )
 ipv4_regex = '^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'

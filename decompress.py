@@ -30,3 +30,10 @@ def bzip2__decompress(timestamp, loc, ipv, topo_choice):
 
 
     decompress_log.close()
+
+
+def gz__decompress(timestamp, loc, ipv, topo_choice):
+    # Prep log file
+    decompress_log = open(loc + "decompression"+ timestamp + ".log", "a")
+
+    decompress_log.close()

@@ -76,6 +76,7 @@ def convert_itdk_edition(timestamp, os_env_json, itdkv_json, db_json):
         read_in_nodes.sqlite3__read_in_nodes(cnxn, loc, topo_choice, ipv)
 
         # Read in links
+        read_in_links.sqlite3__read_in_links(cnxn, loc, topo_choice, ipv)
 
         cnxn.close()
 
@@ -84,7 +85,7 @@ def main():
     args = parser.parse_args()
 
     timestamp = log_util.get_timestamp()
-    
+
     # eventually make this a loop so you can do multiple editions
     convert_itdk_edition(timestamp, args.os_env_json, args.itdk_json, args.db_json)
 
