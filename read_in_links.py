@@ -73,7 +73,7 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
 
         # limit reads to 100 for development purposes
         found +=1
-        if found > 1000:
+        if found > 10000:
             break
 
     links_file.close()
