@@ -21,7 +21,12 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
                 tokens = re.split("\s", line)
 
                 for token in tokens:
+                    
+                    if parse_util.whitespace.match(token):
+                        continue
+
                     print("\nToken: " + token)
+
                     if ipv == 4:
 
                         if parse_util.ipv4_link_end.match(token):
