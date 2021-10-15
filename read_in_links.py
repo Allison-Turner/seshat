@@ -6,7 +6,10 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
 
     links_file = open(loc + topo_choice + properties.itdk_file_types[1], "r")
 
+    found = 0
+
     for line in links_file:
+        print("\nLine: " + line)
         prefix = parse_util.link_entry_prefix.search(line)
 
         if prefix is not None:
@@ -18,7 +21,7 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
                 tokens = re.split("\s", line)
 
                 for token in tokens:
-
+                    print("\nToken: " + token)
                     if ipv == 4:
 
                         if parse_util.ipv4_link_end.match(token):
@@ -49,7 +52,7 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
                     if ipv == 6:
                         # extract node ID and interface address
                         if parse_util.ipv6_link_end.match(token):
-                            
+
                             if n1_id is None:
                                 # assign node ID just identified to be source node
                                 # can't split on : because that's part of IPv6 addresses
@@ -67,5 +70,10 @@ def sqlite3__read_in_links(cnxn, loc, topo_choice, ipv):
 
                             else:
                                 print("assign identified node ID to be dest, insert into table")
+
+        # limit reads to 100 for development purposes
+        found +=1
+        if found > 100:
+            break
 
     links_file.close()
