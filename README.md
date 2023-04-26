@@ -1,125 +1,190 @@
 # usable-itdk
 Parse [CAIDA ITDK](https://www.caida.org/catalog/datasets/internet-topology-data-kit/) files into a database
 
-## Notes
+## ITDK File Formats
+**The following is an excerpt from ITDK release README files**
 
-SQLite does not require pyodbc, since Python 3 has built-in support via the [sqlite3 package](https://docs.python.org/3/library/sqlite3.html)
+Each router-level topology is provided in two files, one giving the
+nodes and another giving the links.  There are also files that
+assign ASes and geolocation to each node.
 
-pyodbc not currently functional because I need to spend more time on figuring out the drivers.
 
-Currently, a plain ./run.py will successfully download, decompress, and parse the .nodes file. Parser for .links is in progress.
+IPv4 Router Topology (MIDAR + iffinder alias resolution):
+========================================================
 
-## Files
-### properties.py
-Utility functions for deserializing JSON files and unfolding the resulting dictionaries
+midar-iff.nodes
+midar-iff.links
+midar-iff.nodes.as
+midar-iff.nodes.geo
 
-#### properties/db.json
-Metadata for the target database
+IPv6 Router Topology (speedtrap IPv6 alias resolution):
+======================================================
 
-* driver
-  * type: string
-  * defines the driver to use
-  * when using SQLite, only must write "SQLite3" in this field, all other fields in db.json can be left blank
+speedtrap.nodes
+speedtrap.links
+speedtrap.nodes.as
+speedtrap.nodes.geo
 
-* server
-  * type: string
-  * server where target database is located
-  * unused for SQLite
-  * needed for connection string for other DB platforms
 
-* name
-  * type: string
-  * database name
-  * unused for SQLite
-  * needed for connection string for other DB platforms
+File Formats:
+============
 
-* user
-  * type: string
-  * database username for authentication
-  * unused for SQLite
-  * needed for connection string for other DB platforms
+.nodes
 
-* pwd
-  * type: string
-  * password for database user given in property "user"
-  * unused for SQLite
-  * needed for connection string for other DB platforms
+     The nodes file lists the set of interfaces that were inferred to
+     be on each router.
 
-#### properties/itdk_version.json
-Metadata for the target ITDK edition
+      Format: node <node_id>:   <i1>   <i2>   ...   <in>
+     Example: node N33382:  4.71.46.6 192.8.96.6 0.4.233.32
 
-* ip_version
-  * type: integer
-  * value can be either 4 or 6
-  * required
+     Each line indicates that a node node_id has interfaces i_1 to i_n.
+     Interface addresses in 224.0.0.0/3 (IANA reserved space for multicast)
+     are not real addresses.  They were artificially generated to identify
+     potentially unique non-responding interfaces in traceroute paths.
 
-* year
-  * type: integer
-  * example value: 2020
-  * required
+     The IPv6 dataset uses IPv6 multicast addresses (FF00::/8) to indicate
+     non-responding interfaces in traceroute paths.
 
-* month
-  * type: integer
-  * example value: 4
-    * the JSON parser gets angry when you try to put leading zeros on integers
-    * i definitely could just make this a string but i don't want to confuse people about the formatting, keeping it simple and converting it in the code
-  * required
+       NOTE: In ITDK release 2013-04 and earlier, we used addresses in
+             0.0.0.0/8 instead of 224.0.0.0/3 for these non-real addresses.
 
-* day
-* type: integer
-* example value: 9
-  * the JSON parser gets angry when you try to put leading zeros on integers
-  * i definitely could just make this a string but i don't want to confuse people about the formatting, keeping it simple and converting it in the code
-* required
 
-* url
-  * type: string
-  * URL of dataset files, excluding the segments specific to edition date, topology choice, specific file, etc
-  * example value: "http://publicdata.caida.org/datasets/topology/ark/ipv4/itdk/"
+.links
 
-* topo_choice
-  * type: string
-  * example values
-    * "midar-iff"
-    * "kapar-midar-iff"
-  * necessary for building wget URLs, file names, etc.
+     The links file lists the set of routers and router interfaces
+     that were inferred to be sharing each link.  Note that these are
+     IP layer links, not physical cables or graph edges.  More than
+     two nodes can share the same IP link if the nodes are all
+     connected to the same layer 2 switch (POS, ATM, Ethernet, etc).
 
-* compression_extension
-  * type: string
-  * example value: ".bz2"
-  * included this because i'm not sure about the compression type consistency throughout the archives
+      Format: link <link_id>:   <N1>:i1   <N2>:i2   [<N3>:[i3] .. [<Nm>:[im]]
+     Example: link L104:  N242484:211.79.48.158 N1847:211.79.48.157 N5849773
 
-#### properties/os_env.json
-Metadata for the OS environment hosting this suite
+     Each line indicates that a link link_id connects nodes N_1 to
+     N_m.  If it is known which router interface is connected to the
+     link, then the interface address is given after the node ID
+     separated by a colon (e.g., "N1:1.2.3.4"); otherwise, only the
+     node ID is given (e.g., "N1").
 
-* os
-  * type: string
-  * example value: "Ubuntu"
-  * identifying the OS where this suite is being run (I could figure this out programmatically probably but i can iterate on that later)
-  * i think the os property will only be important if we want to make this suite work on Windows too
+     By joining the node and link data, one can obtain the _known_ and
+     _inferred_ interfaces of each router.  Known interfaces actually
+     appeared in some traceroute path.  Inferred interfaces arise when
+     we know that some router N_1 connects to a known interface i_2 of
+     another router N_2, but we never saw an actual interface on the
+     former router.  The interfaces on an IP link are typically
+     assigned IP addresses from the same prefix, so we assume that
+     router N_1 must have an inferred interface from the same prefix
+     as i_2.
 
-* username
-  * type: string
-  * OS user running this suite
-  * $HOME for this user is generated and prepended to the ITDK file location
 
-### log_util.py
-Functions to generate a timestamp for the current run's logs, and to pull STDOUT, STDERR, and return code for a given command
+.nodes.as
 
-### parse_util.py
-Defines regex for ITDK nodes and links, IP addresses (v4 or v6), etc.
+     The node-AS file assigns an AS to each node found in the nodes
+     file.  We used bdrmapIT to infer the owner AS of each node.
 
-### download.py
-Downloads all files of target ITDK edition from CAIDA's dataset download site into the specified file location.
+      Format: node.AS   <node_id>   <AS>   <heuristic-tag>
+     Example: node.AS N39 17645 refinement
 
-### decompress.py
-Decompresses ITDK files. Currently only implements .bz2 decompression, can add more as I come across other compression types in the archive.
+     Each line indicates that the node node_id is owned/operated by
+     the given AS, tagged with the heuristic that bdrmapIT used. There
+     are five possible heuristic tags:
 
-### initialize_db.py
-Functions for initializing a connection to the target DB and creating the schema
+        1. origins: AS inferred based on the AS announcing the
+	   longest matching prefixes for the router interface IP
+	   addresses.
 
-### read_in_nodes.py
-Parses ITDK .nodes file and INSERTs each entry to map_address_to_node
+        2. lasthop: AS inferred based on the destination AS of the
+	   IP addresses tracerouted.
 
-### read_in_links.py
-Parses ITDK .links file and INSERTs each entry to map_link_to_nodes
+        3. refinement: AS inferred based on the ASes of surrounding
+	   routers.
+
+        4. as-hints: AS hints embedded in PTR records checked with
+	   bdrmapIT.
+
+        5. unknown: routers that bdrmapIT could not infer an AS for.
+
+
+.nodes.geo
+
+     The node-geolocation file contains an inferred geographic
+     location of each node in the nodes file, where possible.
+
+      Format: node.geo <node_id>:   <continent>   <country>   <region> \
+              <city>   <latitude>   <longitude>  <method>
+     Example: node.geo N15:  NA  US  HI  Honolulu  21.2890  -157.8028  maxmind
+
+     Each line indicates that the node node_id has the given
+     geographic location.  Columns after the colon are tab-separated.
+     The fields have the following meanings:
+
+       <continent>: a two-letter continent code
+
+		    * AF: Africa
+    		    * AN: Antarctica
+    		    * AS: Asia
+		    * EU: Europe
+		    * NA: North America
+		    * OC: Oceania
+		    * SA: South America
+
+       <country>: a two-letter ISO 3166 Country Code.
+
+       <region>: a two or three alphanumeric region code.
+
+       <city>: city or town in ISO-8859-1 encoding (up to 255 characters).
+
+       <latitude> and <longitude>: signed floating point numbers.
+
+       <method>: the geolocation method which inferred the location
+
+                    * hoiho: inferred using Hoiho's rules
+		    * ix: inferred based on the known location of an IXP
+		    * maxmind: inferred using maxmind
+
+
+.ifaces
+
+     This file provides additional information about all interfaces
+     included in the provided router-level graphs:
+
+      Format:  <address> [<node_id>] [<link_id>] [T] [D]
+
+     Each of the fields in square brackets may or may not be present.
+
+     Example:  1.0.174.107 N34980480 D
+     Example:  1.0.101.6 N18137917 L537067 T
+
+     Example:  1.28.124.57 N45020
+     Example:  11.3.4.2 N18137965 L537125 T D
+     Example:  1.0.175.90
+
+     <node_id> starts with "N" and identifies the node (alias set) to which
+     the address belongs.  An address may not have a node_id if no aliases
+     were found.
+
+     <link_id> starts with "L" and identifies the link to which the address is
+     attached, if known.  An address will not have a link_id if it was
+     obtained from a source other than traceroute or appeared only as the
+     first public address in a traceroute (i.e., the source and all other hops
+     preceeding this address were either private addresses or nonresponsive).
+
+     "T" indicates that the address appeared in at least one traceroute as a
+     transit hop, i.e. preceeded by at least one (public or private) address
+     (including the source) and followed by at least one public address
+     (including the destination).  An address does not qualify as a transit
+     hop if it was seen only in these situations: it was obtained from a
+     source other than traceroute; it was the source or destination of a
+     traceroute; or it was the last responding public address to appear in a
+     traceroute.
+
+     "D" indicates that the address appeared in at least one traceroute as a
+     responding destination hop.
+
+     "T" and "D" are not mutually exclusive -- an address may have been a
+     transit hop in one traceroute and the destination in another.
+
+     An interface address will have "T" but not "L<link_id>" if it appeared
+     only as the first public address in a traceroute.
+
+
