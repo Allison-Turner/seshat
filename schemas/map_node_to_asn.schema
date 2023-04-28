@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS map_node_to_asn (
+    node_id integer, 
+    as_number integer
+);

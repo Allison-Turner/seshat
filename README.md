@@ -1,6 +1,15 @@
 # usable-itdk
 Parse [CAIDA ITDK](https://www.caida.org/catalog/datasets/internet-topology-data-kit/) files into a database
 
+## notes
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+https://docs.python.org/3/library/sqlite3.html
+https://docs.python.org/3/library/http.server.html
+https://python.igraph.org/en/stable/
+https://plotly.com/python/
+https://docs.python.org/3/library/os.path.html
+https://docs.python.org/3/library/stdtypes.html
+
 ## ITDK File Formats
 **The following is an excerpt from ITDK release README files**
 
