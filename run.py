@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 import config
-import requests, os, glob, shutil, gzip, bz2, sqlite3
+import requests, os, glob, shutil, gzip, bz2, sqlite3, re
 from bs4 import BeautifulSoup
 
 
@@ -100,7 +100,7 @@ def parse_nodes_file(cnxn, cursor, nodes_file):
 
             fields = line.strip().split(" ")
 
-            node_id = fields[1]
+            node_id = fields[1].replace("N", "")
 
             for addr in fields[2:]:
                 cursor.execute("INSERT INTO map_address_to_node (address, node_id) VALUES (?, ?);", (addr, node_id))
@@ -116,13 +116,13 @@ def parse_links_file(cnxn, cursor, links_file):
                 continue
 
             fields = line.strip().split(" ")
-            link_id = fields[1]
+            link_id = fields[1].replace("L", "")
 
             for tuple in fields[2:]:
                 subfields = tuple.split(':', 1)
 
                 if len(subfields) > 1:
-                    node_id = subfields[0]
+                    node_id = subfields[0].replace("N", "")
                     ip_addr = subfields[1]
 
                 else:
@@ -159,6 +159,8 @@ def parse_ifaces_file(cnxn, cursor, ifaces_file):
                 elif "D" in field_n:
                     dest_hop = True
 
+            cursor.execute("INSERT INTO map_interface_to_node ()")
+
 
 
 def parse_nodes_as_file(cnxn, cursor, nodes_as_file):
@@ -168,6 +170,14 @@ def parse_nodes_as_file(cnxn, cursor, nodes_as_file):
                 continue
 
             fields = line.strip().split(" ")
+
+            node_id = fields[1].replace("N", "")
+            as_num = fields[2]
+            heur = fields[3]
+
+            cursor.execute("INSERT INTO map_node_to_asn (node_id, as_number) VALUES (?, ?);", (node_id, as_num))
+
+            cnxn.commit()
 
 
 
@@ -179,6 +189,17 @@ def parse_nodes_geo_file(cnxn, cursor, nodes_geo_file):
 
             fields = line.strip().split(" ")
 
+            node_id = fields[1].replace("N", "")
+            continent = fields[2]
+            country = fields[3]
+            region = fields[4]
+            city = fields[5]
+            latitude = fields[6]
+            longitude = re.sub("[A-Za-z]", "", fields[7])
+
+            cursor.execute("INSERT INTO map_node_to_geo (node_id, continent, country, region, city, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)", (node_id, continent, country, region, city, latitude, longitude))
+
+            cnxn.commit()
 
 
 def populate_db(db_file, itdk_files):
@@ -199,7 +220,8 @@ def populate_db(db_file, itdk_files):
         fname = os.path.basename(f)
 
         if fname.endswith(".ifaces"):
-            parse_ifaces_file(cnxn, cursor, f)
+            continue
+            #parse_ifaces_file(cnxn, cursor, f)
 
         elif fname.endswith(".links"):
             parse_links_file(cnxn, cursor, f)

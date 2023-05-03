@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS map_node_to_geo (
+    node_id integer, 
+    continent text,
+    country text,
+    region text,
+    city text,
+    latitude real,
+    longitude real
+);
