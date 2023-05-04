@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 
 import config
-import requests, os, glob, shutil, gzip, bz2, sqlite3, re
+import requests, os, glob, shutil, gzip, bz2, sqlite3, re, datetime
+import plotly.express as px
 from bs4 import BeautifulSoup
 
 
@@ -219,6 +220,8 @@ def populate_db(db_file, itdk_files):
     for f in itdk_files:
         fname = os.path.basename(f)
 
+        print("{} {}".format(datetime.datetime.now(), f))
+
         if fname.endswith(".ifaces"):
             continue
             #parse_ifaces_file(cnxn, cursor, f)
@@ -247,6 +250,27 @@ def populate_db(db_file, itdk_files):
     cnxn.close()
 
 
+def render_topo_map(db_file, html_file_name):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    node_ids = []
+    latitudes = []
+    longitudes = []
+
+    cursor.execute("SELECT node_id, latitude, longitude FROM map_node_to_geo")
+    rows = cursor.fetchall()
+
+    for r in rows:
+        node_ids.append("N" + str(r[0]))
+        latitudes.append(r[1])
+        longitudes.append(r[2])
+
+    cnxn.close()
+
+    fig = px.scatter_geo(lat=latitudes, lon=longitudes, text=node_ids)
+    fig.write_html(html_file_name)
+
 
 def __main__():
     itdk_date, files = get_itdk_files()
@@ -268,6 +292,8 @@ def __main__():
 
     populate_db(midar_iff_db, midar_iff_files)
     #populate_db(speedtrap_db, speedtrap_files)
+
+    render_topo_map(midar_iff_db, config.FIG_DIR + "midar-iff-" + itdk_date + "-nodes-geo.html")
 
 
 
