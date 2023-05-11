@@ -3,33 +3,7 @@
 import config
 
 from db import get_itdk_files, populate_db
-
-import sqlite3
-import plotly.express as px
-
-
-
-def render_topo_map(db_file, html_file_name):
-    cnxn = sqlite3.connect(db_file)
-    cursor = cnxn.cursor()
-
-    node_ids = []
-    latitudes = []
-    longitudes = []
-
-    cursor.execute("SELECT node_id, latitude, longitude FROM map_node_to_geo")
-    rows = cursor.fetchall()
-
-    for r in rows:
-        node_ids.append("N" + str(r[0]))
-        latitudes.append(r[1])
-        longitudes.append(r[2])
-
-    cnxn.close()
-
-    fig = px.scatter_geo(lat=latitudes, lon=longitudes, text=node_ids)
-    fig.write_html(html_file_name)
-
+from generate_visualization import render_topo_map
 
 def __main__():
     itdk_date, files = get_itdk_files()

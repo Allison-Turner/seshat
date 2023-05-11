@@ -201,6 +201,27 @@ def populate_db(db_file, itdk_files):
     cnxn.close()
 
 
+def get_node_coords(db_file):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    node_ids = []
+    latitudes = []
+    longitudes = []
+
+    cursor.execute("SELECT node_id, latitude, longitude FROM map_node_to_geo")
+    rows = cursor.fetchall()
+
+    for r in rows:
+        node_ids.append("N" + str(r[0]))
+        latitudes.append(r[1])
+        longitudes.append(r[2])
+
+    cnxn.close()
+
+    return list(zip(node_ids, latitudes, longitudes))
+
+
 def __main__():
     itdk_date, files = get_itdk_files()
 
