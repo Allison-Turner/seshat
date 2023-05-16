@@ -10,6 +10,62 @@ https://plotly.com/python/
 https://docs.python.org/3/library/os.path.html
 https://docs.python.org/3/library/stdtypes.html
 
+https://dash.plotly.com/
+
+### CAIDA recipe
+https://catalog.caida.org/recipe/parse_the_itdk
+
+### excerpt from discussion on CAIDA Mattermost
+
+question regarding hyperlinks:
+I understand the "multiple non-aliased predecessors" definition, however I still don't fully understand what probe outputs get you a hyperlink-classified occurrence 
+
+K gave me an example:  
+
+imagine two separate traceroutes:  A B C * * * F
+and A B D * * * F
+we would make a hyperlink among D, C, F  .
+this is how we describe it on  https://www.caida.org/archive/topo_comparison/  to describe figure 3b
+
+K wants to make sure she is explaining it correctly to me
+
+to make sure i understand
+*we can't use a placeholder node because it's multiple hops and so hyperlinks represent ambiguity of multiple entities
+*we do not know how D and C relate to each other besides being upstream of F in this direction, and we can't say any thing about the reverse direction of F to D or F to C
+
+bradley
+1:21 PM
+@kkeys @young when/how are hyper links inferred in the ITDK 
+	
+kkeys
+2:23 PM
+k's example is wrong.  Figure 3 and the text with it are correct (if a bit unclear: the left side of the figure shows sequential traceroute hops, and the right side shows routers, their interfaces, and IP links between the interfaces).  Remember, traceroutes (usually) see the incoming interface of each router, but links are between an outgoing interface of one router and an incoming interface of the next router.  And without additional information (from a traceroute in the opposite direction), the outbound interfaces will have unknown addresses.  In figure 3, there's a hyperlink among (?,?,B) because we weren't able to prove the two routers on the left are the same router.  If they are the same router, and the two ?'s are the same interface, then the inferred hyperlink is really just a (?,B) IP link.  But if the two routers are different, the (?,?,B) hyperlink really is a IP-level hyperlink, i.e. there are 3 routers and addresses (?,?,B) are on the same IP subnet (perhaps all connected to the same layer 2 switch).
+
+	
+allison
+2:43 PM
+so just to make sure i understand
+
+X -- B
+Y -- B
+
+we know that (X, B) and (Y, B) are valid directed edges
+the known here is the inbound address of B
+the unknown is the outbound addresses of X and Y that they use when talking to B's known inbound address
+if you can run a traceroute that moves in the opposite direction on that interface of B, you will find either one address that connects to both X and Y's neighbors, in which case X and Y are collapsed into a single node, or two different addresses, in which case they are left separate
+if you can't get a trace to run in the opposite direction, the reality remains ambiguous and is then designated a hyperlink
+	
+k.c
+2:49 PM
+so brad said this to me earlier, that the way allison knows about a node in the links file is e.g., "a hyper link from ITDK-2020-08/midar-iff.links.bz2 is "link L43:  N6369892:1.1.1.5 N110677 N110678 N110679" which contains a link shared between 4 nodes"  @kkeys is that correct?  
+
+	
+kkeys
+3:01 PM
+The letters X,Y,B here are referring to interfaces (IP addresses), not nodes (routers).  I would rephrase @allison's first point to:  we know that (Nx,Nb) and (Ny,Nb) are valid directed edges, where Nx is a node that has an interface address X, etc.
+
+@k.c's example L43 is, yes, a link between 4 nodes, or more precisely, a link between interface 1.1.1.5 of node N6369892 and unknown interfaces of nodes N110677, N110678, N110679.
+
 ## ITDK File Formats
 **The following is an excerpt from ITDK release README files**
 

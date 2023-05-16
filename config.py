@@ -6,6 +6,8 @@ DOWNLOAD_TO_DIR = "/home/allison/Desktop/ITDK/"
 
 DB_DIR = "/home/allison/Desktop/ITDK/"
 
+CSV_DIR = "/home/allison/Desktop/ITDK/csv/"
+
 LIST_TABLES_QUERY = """SELECT name FROM sqlite_master
     WHERE type='table';"""
 # usage example:

@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS map_link_to_node(
-    link_id integer, 
-    node_id integer,
-    address inet -- optional
-);

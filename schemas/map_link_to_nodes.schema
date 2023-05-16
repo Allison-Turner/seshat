@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS map_link_to_nodes(
+    link_id integer, 
+    node_id_1 integer,
+    address_1 inet, -- optional
+    node_id_2 integer,
+    address_2 inet -- optional  
+);
