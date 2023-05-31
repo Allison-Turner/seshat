@@ -2,19 +2,25 @@
 
 import config
 
-from db import get_all_node_coords, get_node_coords, get_links
+from db import get_all_node_coords, get_node_coords, get_links, get_geo_links, fetch_top_nodes, find_num_geo_nodes, find_num_non_geo_nodes, get_links_for_node, get_geo_links_for_node
 
 from glob import glob
-import os
+import os, sys, json
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
 import pandas as pd
+import dash_cytoscape
 
 
-itdk_dbs = glob(config.DB_DIR + "*-itdk.db")
+css_colors = ['Aqua', 'Aquamarine', 'Blue', 'Indigo', 'Brown', 'CadetBlue', 'Chartreuse', 'Chocolate', 'Coral', 'CornflowerBlue', 'Crimson', 'Blue', 'GoldenRod', 'Green', 'Magenta', 'Gold', 'FireBrick', 'Fuchsia', 'DodgerBlue', 'DeepSkyBlue', 'DarkTurquoise', 'GreenYellow', 'IndianRed', 'LightGreen', 'Magenta', 'Maroon', 'Lime', 'Navy', 'Olive', 'Orange', 'OrangeRed', 'Orchid', 'Pink', 'Plum', 'Purple', 'Red', 'Yellow', 'Teal', 'YellowGreen']
+
+
+itdk_dbs = glob(config.ITDK_DB_DIR + "*-itdk.db")
 
 itdk_versions = [os.path.basename(itdk_vsn).replace("-itdk.db", "") for itdk_vsn in itdk_dbs]
+
+#top_nodes_df = pd.read_csv(config.DB_DIR + "top-outdegree." + "midar-iff-2022-02" + ".txt", header=None, names=["node_id","outdegree","asn","org_name","latitude","longitude"])
 
 app = Dash(__name__)
 
@@ -29,105 +35,184 @@ app.layout = html.Div(children=[
         inline=True
     ),
 
-    dcc.Graph(id='topo-map')
+    dcc.Slider(0, 1000000, 5000, value=5000, id='num_nodes', marks={0:'0', 100000:'100,000', 200000:'200,000', 300000:'300,000', 400000:'400,000', 500000:'500,000', 600000:'600,000', 700000:'700,000', 800000:'800,000', 900000:'900,000', 1000000:'1,000,000'}),
+
+    dcc.Graph(id='topo-map'),
+
+    html.P(id="context-label"),
+
+    html.Pre(id='hover-data'),
+
+    html.Div(id='node_selected'),
+
+    html.Div(id='links_view'),
+
+    dcc.Dropdown(['node_outdegree', 'org_name', 'no data coloring'], 'no data coloring', id='color_by'),
+
+    #dash_table.DataTable(id="table",
+    #    data=top_nodes_df.to_dict('records'),
+    #    columns=[{'id': c, 'name': c, } for c in top_nodes_df]
+    #),
 
 ])
 
 
 @app.callback(
-    Output(component_id='topo-map', component_property='figure'),
-    Input(component_id='itdk_versions', component_property='value')
+        [
+            Output(component_id='topo-map', component_property='figure'),
+            Output(component_id='context-label', component_property='children')
+        ],
+        [
+            Input(component_id='itdk_versions', component_property='value'),
+            Input(component_id='color_by', component_property='value'),
+            Input(component_id='num_nodes', component_property='value')
+        ]
 )
-def update_topo_map(itdk_versions):
+def update_topo_map(itdk_versions, color_by, num_nodes):
+    total_pts_displayed = 0
+    num_geo_nodes = 0
+    num_non_geo_nodes = 0
+
+    min_outdegree = sys.maxsize * 2 + 1
+    max_outdegree = -sys.maxsize - 1
+
+
     for itdk_vsn in itdk_versions:
-        #node_coords = pd.DataFrame(list(zip(get_all_node_coords(config.DB_DIR + itdk_vsn + "-itdk.db"))), columns=['node_id','latitude','longitude'])
-        node_ids = ["N1", "N2", "N3", "N4", "N5"]
-        latitudes = [0, -25, 25, -50, 75]
-        longitudes = [30, -30, 90, -100, 110]
-        node_lat_dict = {}
-        node_long_dict = {}
+        #node_ids, latitudes, longitudes = get_all_node_coords(config.DB_DIR + itdk_vsn + "-itdk.db")
+        #node_coords_df = pd.DataFrame({'node_id': node_ids, 'latitude' : latitudes, 'longitude' : longitudes})
+        #fig = px.scatter_mapbox(lat=node_coords_df['latitude'], lon=node_coords_df['longitude'], hover_name=node_coords_df['node_id'])
 
-        for i in range(len(node_ids)):
-            node_lat_dict[node_ids[i]] = latitudes[i]
-            node_long_dict[node_ids[i]] = longitudes[i]
+        db_file = config.ITDK_DB_DIR + itdk_vsn + "-itdk.db"
 
-        node_coords = list(zip(node_ids, latitudes, longitudes))
-        node_coords_df = pd.DataFrame(node_coords, columns=['node_id','latitude','longitude'])
+        node_ids, outdegrees, asns, org_names, lats, longs = fetch_top_nodes(db_file, num_nodes)
 
-        fig = px.scatter_geo(lat=node_coords_df['latitude'], lon=node_coords_df['longitude'], hover_name=node_coords_df['node_id'])
+        total_pts_displayed += len(node_ids)
 
-        fig.update_geos(fitbounds="locations", visible=True)
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}
-            )
-    
-        link_ids, node_ids_1, addrs_1, node_ids_2, addrs_2 = get_links(config.DB_DIR + itdk_vsn + "-itdk.db")
+        data_src = [db_file] * total_pts_displayed
 
-        node_1_lats = []
-        node_1_longs = []
-        node_2_lats = []
-        node_2_longs = []
+        node_sample_df = pd.DataFrame({
+            'node_id': node_ids,
+            'outdegree': outdegrees,
+            'asn': asns,
+            'org_name': org_names,
+            'latitude': lats,
+            'longitude': longs,
+            'data_src': data_src
+        })
 
-        for row_num in range(len(link_ids)):
-            #node_id_1 = node_ids_1[row_num]
-            #node_id_2 = node_ids_2[row_num]
-            if node_ids_1[row_num] in node_lat_dict.keys() and node_ids_2[row_num] in node_lat_dict.keys():
-                lat_1 = node_lat_dict[node_ids_1[row_num]]
-                lat_2 = node_long_dict[node_ids_1[row_num]]
-                long_1 = node_lat_dict[node_ids_2[row_num]]
-                long_2 = node_long_dict[node_ids_2[row_num]]
-            else:
-                lat_1 = None
-                lat_2 = None
-                long_1 = None
-                long_2 = None
+        num_geo_nodes += find_num_geo_nodes(db_file)
+        num_non_geo_nodes += find_num_non_geo_nodes(db_file)
 
-            """
-            for i in range(len(node_ids)):
-                if node_ids[i] == node_id_1:
-                    lat_1 = latitudes[i]
-                    long_1 = longitudes[i]
+        if color_by == "no data coloring":
+            fig = px.scatter_mapbox(
+                data_frame=node_sample_df,
+                lat='latitude', 
+                lon='longitude', 
+                hover_name='node_id',
+                custom_data=['node_id', 'outdegree', 'asn', 'org_name', 'data_src']
+                )            
+        elif color_by == "node_outdegree":
+            fig = px.scatter_mapbox(
+                data_frame=node_sample_df,
+                lat='latitude', 
+                lon='longitude', 
+                hover_name='node_id',
+                custom_data=['node_id', 'outdegree', 'asn', 'org_name', 'data_src'],
+                color='outdegree',
+                color_continuous_scale='viridis'
+                )
+        elif color_by == "org_name":
+            orgs = node_sample_df.org_name.unique()
 
-                if node_ids[i] == node_id_2:
-                    lat_2 = latitudes[i]
-                    long_2 = longitudes[i]
-            
-            result_1 = get_node_coords(config.DB_DIR + itdk_vsn + "-itdk.db", node_id_1)
+            fig = px.scatter_mapbox(
+                data_frame=node_sample_df,
+                lat='latitude', 
+                lon='longitude', 
+                hover_name='node_id',
+                custom_data=['node_id', 'outdegree', 'asn', 'org_name', 'data_src'],
+                color='org_name',
+                color_discrete_sequence=css_colors[:len(orgs)]
+                )
 
-            if result_1 is not None:
-                lat_1 = result_1[0]
-                long_1 = result_1[1]
-            else:
-                continue
 
-            result_2 = get_node_coords(config.DB_DIR + itdk_vsn + "-itdk.db", node_id_2)
+        fig.update_layout(mapbox_style="open-street-map")
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.update_layout(showlegend=False)
 
-            if result_2 is not None:
-                lat_2 = result_2[0]
-                long_2 = result_2[1]
-            else:
-                continue
-            """
-            node_1_lats.append(lat_1)
-            node_1_longs.append(long_1)
+    return fig, "{:,} nodes displayed out of {:,} mappable nodes, {:,} nodes not displayable on a map".format(total_pts_displayed, num_geo_nodes, num_non_geo_nodes)
 
-            node_2_lats.append(lat_2)
-            node_2_longs.append(long_2)
 
-        links_geo_df = pd.DataFrame(list(zip(link_ids, node_ids_1, addrs_1, node_1_lats, node_1_longs, node_ids_2, addrs_2, node_2_lats, node_2_longs)), columns=['link_id', 'node_id_1', 'address_1', 'lat_1', 'long_1', 'node_id_2', 'address_2', 'lat_2', 'long_2'])
+@app.callback(
+    Output('hover-data', 'children'),
+    Input('topo-map', 'hoverData'))
+def display_node_data_on_hover(hoverData):
+    if hoverData is not None:
+        #hover_action = json.loads(hoverData)
+        node_data = hoverData['points'][0]['customdata']
+        node_id = node_data[0]
+        outdegree = node_data[1]
+        asn = node_data[2]
+        org_name = node_data[3]
+        data_src = node_data[4]
 
-        for i in range(len(links_geo_df)):
+        return "Node ID: {}\nOutdegree: {}\nASN: {}\nOrg Name: {}".format(node_id, outdegree, asn, org_name)
+        #return json.dumps(hoverData, indent=2)
 
-            fig.add_trace(go.Scattergeo(
-                lon = [links_geo_df['long_1'][i], links_geo_df['long_2'][i]],
-                lat = [links_geo_df['lat_1'][i], links_geo_df['lat_2'][i]],
-                mode = 'lines',
-                line = dict(width = 1,color = 'red'),
-            ))
 
-    return fig
+@app.callback(
+    Output(component_id='links_view', component_property='children'),
+    Input('topo-map', 'clickData'))
+def display_click_data(clickData):
+    if clickData is not None:
+        node_data = clickData['points'][0]['customdata']
+        node_id = node_data[0]
+        #outdegree = node_data[1]
+        #asn = node_data[2]
+        #org_name = node_data[3]
+        data_src = node_data[4]
+
+        #link_ids, node_ids_1, lat_1, long_1, addrs_1, node_ids_2, addrs_2, lat_2, long_2 = get_geo_links_for_node(data_src, node_id)
+        """
+        links_df = pd.DataFrame({
+            'link_id': link_ids,
+            'node_id_1': node_ids_1,
+            'addr_1': addrs_1,
+            'lat_1': lat_1,
+            'long_1': long_1,
+            'node_id_2': node_ids_2,
+            'addr_2': addrs_2,
+            'lat_2': lat_2,
+            'long_2': long_2
+        })"""
+        link_ids, node_ids_1, addrs_1, node_ids_2, addrs_2 = get_links_for_node(data_src, node_id)
+
+        links_df = pd.DataFrame({
+            'link_id': link_ids,
+            'node_id_1': node_ids_1,
+            'addr_1': addrs_1,
+            'node_id_2': node_ids_2,
+            'addr_2': addrs_2,
+        })
+
+        nodes = links_df.node_id_2.unique().tolist()
+        node_dicts = [{'data': {'id': str(x), 'label': str(x)}} for x in nodes]
+        edge_dicts = [{'data': {'source': str(node_id), 'target': str(y)}} for y in links_df.node_id_2]
+
+        return dash_cytoscape.Cytoscape(
+            id='links',
+            autoungrabify=True,
+            minZoom=0.2,
+            maxZoom=1,
+            style={'width': '100%', 'height': '500px'},
+            elements=[{'data': {'id': str(node_id), 'label': str(node_id)}}] + node_dicts + edge_dicts,
+            layout={'name': 'concentric'}
+        )
+
+    #return json.dumps(clickData, indent=2)
+    #return link_table
 
 
 # view in browser at http://127.0.0.1:8050/
 if __name__ == '__main__':
     app.run_server(debug=True)
+
