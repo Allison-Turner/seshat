@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 
 import config
 
+from parse_datasets import convert_itdk_files_to_csvs, convert_as2org_file_to_csvs
+
 parser = ArgumentParser(prog='ITDK-SQLite', description='Turn ITDK files into a local SQLite database')
 
 parser.add_argument('--online', action='store_true')
@@ -14,264 +16,6 @@ parser.set_defaults(feature=True)
 
 class Args:
     pass
-
-def parse_nodes_file_to_csv(nodes_file, itdk_version, csv_directory):
-    if not os.path.exists(csv_directory):
-        os.mkdir(csv_directory)
-
-    nodes_csv = csv_directory + itdk_version + "." + os.path.basename(nodes_file) + ".csv"
-
-    with open(nodes_file, "r") as inf:
-        with open(nodes_csv, "w+") as outf:
-            for line in inf:
-                if line.startswith("#"):
-                    continue
-
-                fields = line.strip().split()
-
-                node_id = int(fields[1].replace("N", "").replace(":", ""))
-
-                node_addrs = fields[2:]
-
-                for addr in node_addrs:
-                    outf.write("{},{}\n".format(node_id, addr))
-
-
-       
-def parse_nodes_geo_file_to_csv(nodes_geo_file, itdk_version, csv_directory):
-    if not os.path.exists(csv_directory):
-        os.mkdir(csv_directory)
-
-    nodes_geo_csv = csv_directory + itdk_version + "." + os.path.basename(nodes_geo_file) + ".csv"
-
-    with open(nodes_geo_file, "r") as inf:
-        with open(nodes_geo_csv, "w+") as outf:
-            for line in inf:
-                if line.startswith("#"):
-                    continue
-
-                fields = line.strip().split()
-
-                node_id = int(fields[1].replace("N", "").replace(":", ""))
-                continent = fields[2]
-                country = fields[3]
-
-                rest_of_line = " ".join(fields[4:])
-
-                result = re.search("(\-)?[0-9]+\.[0-9]+(\s)+(\-)?[0-9]+\.[0-9]+", rest_of_line)
-
-                if result is not None:
-                    coords = result.group().split()
-
-                    lat_index = rest_of_line.index(coords[0])
-
-                    latitude = float(coords[0])
-                    longitude = float(re.sub("[A-Za-z]", "", coords[1]))
-
-                    rest_of_line = rest_of_line[:lat_index].replace(",", "")
-                else:
-                    continue
-
-                result = re.search("([0-9]{1,3}|[A-Z]{2,3})\s", rest_of_line)
-
-                if result is not None:
-                    region = result.group().replace(" ", "")
-
-                    if region.isspace() or len(region) == 0:
-                        region = None
-                    
-                    rest_of_line = rest_of_line.replace(region, "")
-                else:
-                    region = None
-
-                city = rest_of_line.strip().replace(",", "")
-
-                if city.isspace() or len(city) == 0:
-                    city = None
-                
-                outf.write("{},{},{},{},{},{},{}\n".format(node_id, continent, country, region, city, latitude, longitude))
-
-
-
-def parse_nodes_as_file_to_csv(nodes_as_file, itdk_version, csv_directory):
-    if not os.path.exists(csv_directory):
-        os.mkdir(csv_directory)
-
-    nodes_as_csv = csv_directory + itdk_version + "." + os.path.basename(nodes_as_file) + ".csv"
-
-    with open(nodes_as_file, "r") as inf:
-        with open(nodes_as_csv, "w+") as outf:
-            for line in inf:
-                if line.startswith("#"):
-                    continue
-
-                fields = line.strip().split()
-
-                node_id = int(fields[1].replace("N", ""))
-                as_num = int(fields[2])
-
-                outf.write("{},{}\n".format(node_id, as_num))
-
-
-
-def parse_links_file_to_csv(links_file, itdk_version, csv_directory):
-    if not os.path.exists(csv_directory):
-        os.mkdir(csv_directory)
-
-    links_csv = csv_directory + itdk_version + "." + os.path.basename(links_file) + ".csv"
-
-    with open(links_file, "r") as inf:
-        with open(links_csv, "w+") as outf:
-            for line in inf:
-                if line.startswith("#"):
-                    continue
-
-                fields = line.strip().split()
-
-                link_id = int(fields[1].replace("L", "").replace(":", ""))
-
-                first_node = None
-                first_node_addr = None
-
-                for tuple in fields[2:]:
-                    subfields = tuple.split(':', 1)
-
-                    if len(subfields) > 1:
-                        node_id = int(subfields[0].replace("N", ""))
-                        ip_addr = subfields[1]
-
-                    else:
-                        node_id = int(subfields[0].replace("N", ""))
-                        ip_addr = None
-
-                    if first_node is None:
-                        first_node = node_id
-                        first_node_addr = ip_addr
-                    else:
-                        outf.write("{},{},{},{},{}\n".format(link_id, first_node, first_node_addr, node_id, ip_addr))
-
-
-
-def parse_as2org_file_to_csv(as2org_file, csv_directory):
-    dt = os.path.basename(as2org_file).replace(".as-org2info.txt", "")
-
-    year = dt[0:4]
-    month = dt[4:6]
-    day = dt[6:]
-
-    asn_outfile = csv_directory + "-".join([year, month, day]) + ".as2org.asn.csv"
-    org_outfile = csv_directory + "-".join([year, month, day]) + ".as2org.org.csv"
-
-    with open(as2org_file, "r") as inf:
-        with open(asn_outfile, "w+") as asn_outf:
-            with open(org_outfile, "w+") as org_outf:
-                for line in inf:
-                    if line.startswith("#"):
-                        continue
-
-                    fields = line.strip().replace(",", "").split("|")
-
-                    # organization entry
-                    if len(fields) == 5:
-                        org_id = fields[0]
-                        changed = fields[1]
-                        org_name = fields[2]
-                        country = fields[3]
-                        source = fields[4]
-
-                        org_outf.write("{},{},{},{},{}\n".format(org_id, changed, org_name, country, source))
-
-                    # AS number entry
-                    elif len(fields) == 6:
-                        as_num = fields[0]
-                        changed = fields[1]
-                        as_name = fields[2]
-                        org_id = fields[3]
-                        opaque_id = fields[4]
-                        source = fields[5]
-
-                        asn_outf.write("{},{},{},{},{},{}\n".format(as_num, changed, as_name, org_id, opaque_id, source))
-
-    return asn_outfile, org_outfile
-
-
-
-def convert_itdk_files_to_csvs(itdk_files, itdk_version, csv_directory):
-    nodes_file = None
-    nodes_as_file = None
-    nodes_geo_file = None
-    links_file = None
-    ifaces_file = None
-
-    for f in itdk_files:
-        fname = os.path.basename(f)
-
-        if fname.endswith(".ifaces"):
-            ifaces_file = f
-        elif fname.endswith(".links"):
-            links_file = f
-        elif fname.endswith(".nodes.as"):
-            nodes_as_file = f
-        elif fname.endswith(".nodes.geo"):
-            nodes_geo_file = f
-        elif fname.endswith(".nodes"):
-            nodes_file = f
-        elif fname.endswith(".geo-re.jsonl"):
-            continue
-        elif fname.endswith(".addrs"):
-            continue
-        elif fname.endswith("dns-names.txt"):
-            continue
-
-    itdk_csvs = glob.glob(csv_directory + "*.csv")
-
-    generate_nodes_csv = True
-    generate_nodes_as_csv = True
-    generate_nodes_geo_csv = True
-    generate_links_csv = True
-
-    csv_files = []
-
-    for f in itdk_csvs:
-        if itdk_version not in f:
-            continue
-
-        if ".nodes.as" in f:
-            generate_nodes_as_csv = False
-            csv_files.append(f)
-        elif ".nodes.geo" in f:
-            generate_nodes_geo_csv = False
-            csv_files.append(f)
-        elif ".nodes" in f:
-            generate_nodes_csv = False
-            csv_files.append(f)
-        elif ".links" in f:
-            generate_links_csv = False
-            csv_files.append(f)
-
-    if generate_nodes_csv is True:
-        print("{} Processing .nodes file".format(datetime.datetime.now()))
-        nodes_csv = parse_nodes_file_to_csv(nodes_file, itdk_version, csv_directory)
-        csv_files.append(nodes_csv)
-
-    if generate_nodes_geo_csv is True:
-        print("{} Processing .nodes.geo file".format(datetime.datetime.now()))
-        nodes_geo_csv = parse_nodes_geo_file_to_csv(nodes_geo_file, itdk_version, csv_directory)
-        csv_files.append(nodes_geo_csv)
-
-    if generate_nodes_as_csv is True:
-        print("{} Processing .nodes.as file".format(datetime.datetime.now()))
-        nodes_as_csv = parse_nodes_as_file_to_csv(nodes_as_file, itdk_version, csv_directory)
-        csv_files.append(nodes_as_csv)
-
-    if generate_links_csv is True:
-        print("{} Processing .links file".format(datetime.datetime.now()))
-        links_csv = parse_links_file_to_csv(links_file, itdk_version, csv_directory)
-        csv_files.append(links_csv)
-
-    print("{} CSV files: [{}]".format(datetime.datetime.now(), ", ".join(csv_files) ))
-
-    return csv_files
 
 
 
@@ -379,55 +123,6 @@ def populate_itdk_db(db_file, itdk_csvs):
     print("{} Finished creating ITDK tables".format(datetime.datetime.now()))
 
 
-def fetch_top_nodes(db_file, num_to_fetch):
-    cnxn = sqlite3.connect(db_file)
-    cursor = cnxn.cursor()
-
-    cursor.execute("""SELECT node_id, outdegree, as_number, org_name, latitude, longitude
-                   FROM meta_table
-                   LIMIT {};""".format(num_to_fetch))
-
-    rows = cursor.fetchall()
-
-    node_ids = [r[0] for r in rows]
-    outdegrees = [r[1] for r in rows]
-    asns = [r[2] for r in rows]
-    org_names = [r[3] for r in rows]
-    lats = [r[4] for r in rows]
-    longs = [r[5] for r in rows]
-
-    cnxn.close() 
-
-    return node_ids, outdegrees, asns, org_names, lats, longs
-
-
-def find_num_non_geo_nodes(db_file):
-    cnxn = sqlite3.connect(db_file)
-    cursor = cnxn.cursor()
-
-    cursor.execute("""SELECT count(*)
-                   FROM nodes_without_geo;""")
-
-    result = cursor.fetchone()
-
-    cnxn.close() 
-
-    return int(result[0])
-
-
-def find_num_geo_nodes(db_file):
-    cnxn = sqlite3.connect(db_file)
-    cursor = cnxn.cursor()
-
-    cursor.execute("""SELECT count(*)
-                   FROM map_node_to_geo;""")
-
-    result = cursor.fetchone()
-
-    cnxn.close() 
-
-    return int(result[0])
-
 
 def populate_as2org_db(asn_csv, org_csv, db_file):
     cnxn = sqlite3.connect(db_file)
@@ -470,6 +165,83 @@ def populate_as2org_db(asn_csv, org_csv, db_file):
 
     print("{} Finished creating database".format(datetime.datetime.now()))
 
+
+
+def create_meta_table(db_file):
+
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    print("{} Creating meta table".format(datetime.datetime.now()))
+    cursor.execute("""
+    CREATE TABLE meta_table AS
+    SELECT node_outdegrees.node_id, node_outdegrees.outdegree, map_node_to_asn.as_number, asn_org_names.org_name, map_node_to_geo.latitude, map_node_to_geo.longitude
+    FROM node_outdegrees
+    INNER JOIN map_node_to_asn ON node_outdegrees.node_id = map_node_to_asn.node_id
+    INNER JOIN asn_org_names ON map_node_to_asn.as_number = asn_org_names.as_num
+    FULL OUTER JOIN map_node_to_geo ON node_outdegrees.node_id = map_node_to_geo.node_id
+    """)
+
+    cnxn.commit()
+
+    #cursor.execute("CREATE UNIQUE INDEX node_index ON meta_table(node_id);")
+
+    #cnxn.commit()
+
+    cnxn.close()
+
+
+
+def fetch_top_nodes(db_file, num_to_fetch):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    cursor.execute("""SELECT node_id, outdegree, as_number, org_name, latitude, longitude
+                   FROM meta_table
+                   LIMIT {};""".format(num_to_fetch))
+
+    rows = cursor.fetchall()
+
+    node_ids = [r[0] for r in rows]
+    outdegrees = [r[1] for r in rows]
+    asns = [r[2] for r in rows]
+    org_names = [r[3] for r in rows]
+    lats = [r[4] for r in rows]
+    longs = [r[5] for r in rows]
+
+    cnxn.close() 
+
+    return node_ids, outdegrees, asns, org_names, lats, longs
+
+
+
+def find_num_non_geo_nodes(db_file):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    cursor.execute("""SELECT count(*)
+                   FROM nodes_without_geo;""")
+
+    result = cursor.fetchone()
+
+    cnxn.close() 
+
+    return int(result[0])
+
+
+
+def find_num_geo_nodes(db_file):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    cursor.execute("""SELECT count(*)
+                   FROM map_node_to_geo;""")
+
+    result = cursor.fetchone()
+
+    cnxn.close() 
+
+    return int(result[0])
 
 
 
@@ -523,6 +295,7 @@ def get_links(db_file):
     return (link_ids, node_ids_1, addrs_1, node_ids_2, addrs_2)
 
 
+
 def get_links_for_node(db_file, node_id):
     cnxn = sqlite3.connect(db_file)
     cursor = cnxn.cursor()
@@ -539,6 +312,7 @@ def get_links_for_node(db_file, node_id):
     cnxn.close()
 
     return (link_ids, node_ids_1, addrs_1, node_ids_2, addrs_2)
+
 
 
 def get_geo_links_for_node(db_file, node_id):
@@ -586,6 +360,7 @@ def get_geo_links(db_file):
     return (link_ids, node_ids_1, addrs_1, lat_1, long_1, node_ids_2, addrs_2, lat_2, long_2)
 
 
+
 def get_asn_for_node_id(db_file, node_id):
     cnxn = sqlite3.connect(db_file)
     cursor = cnxn.cursor()
@@ -613,29 +388,6 @@ def get_org_name_for_as_number(as_number, db_file):
 
     return org_name
 
-
-def create_meta_table(db_file):
-
-    cnxn = sqlite3.connect(db_file)
-    cursor = cnxn.cursor()
-
-    print("{} Creating meta table".format(datetime.datetime.now()))
-    cursor.execute("""
-    CREATE TABLE meta_table AS
-    SELECT node_outdegrees.node_id, node_outdegrees.outdegree, map_node_to_asn.as_number, asn_org_names.org_name, map_node_to_geo.latitude, map_node_to_geo.longitude
-    FROM node_outdegrees
-    INNER JOIN map_node_to_asn ON node_outdegrees.node_id = map_node_to_asn.node_id
-    INNER JOIN asn_org_names ON map_node_to_asn.as_number = asn_org_names.as_num
-    FULL OUTER JOIN map_node_to_geo ON node_outdegrees.node_id = map_node_to_geo.node_id
-    """)
-
-    cnxn.commit()
-
-    #cursor.execute("CREATE UNIQUE INDEX node_index ON meta_table(node_id);")
-
-    #cnxn.commit()
-
-    cnxn.close()
 
 
 def get_meta_table_rows_for_node_ids(db_file, node_ids):
@@ -692,16 +444,16 @@ def __main__():
     midar_iff_db = config.ITDK_DB_DIR + "midar-iff-" + itdk_date + "-itdk.db"
     speedtrap_db = config.ITDK_DB_DIR + "speedtrap-" + itdk_date + "-itdk.db"
 
-    #midar_iff_csvs = convert_itdk_files_to_csvs(midar_iff_files, itdk_date, config.ITDK_CSV_DIR)
+    midar_iff_csvs = convert_itdk_files_to_csvs(midar_iff_files, itdk_date, config.ITDK_CSV_DIR)
 
-    #populate_itdk_db(midar_iff_db, midar_iff_csvs)
+    populate_itdk_db(midar_iff_db, midar_iff_csvs)
     
     files = glob.glob(config.AS2ORG_DOWNLOAD_TO_DIR + "*")
     for f in files:
         if ".as-org2info.txt" in f:
             as2org_file = f
 
-    #asn_outfile, org_outfile = parse_as2org_file_to_csv(as2org_file, config.AS2ORG_CSV_DIR)
+    asn_outfile, org_outfile = convert_as2org_file_to_csvs(as2org_file, config.AS2ORG_CSV_DIR)
 
     #as2org_dt = os.path.basename(as2org_file).split(".")[0]
     #year = as2org_dt[0:4]
@@ -710,7 +462,7 @@ def __main__():
     #as2org_date = year + "-" + month + "-" + day
     #as2org_db = config.AS2ORG_DB_DIR + "as2org." + as2org_date + ".db"
     
-    #populate_as2org_db(asn_outfile, org_outfile, midar_iff_db)
+    populate_as2org_db(asn_outfile, org_outfile, midar_iff_db)
 
     create_meta_table(midar_iff_db)
 
