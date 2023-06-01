@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS map_org_id_to_org_name (
+    org_id text, 
+    changed text, 
+    org_name text, 
+    country text, 
+    source text
+);

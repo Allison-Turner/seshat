@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS map_address_to_node (
+    address inet, 
+    node_id integer
+);
