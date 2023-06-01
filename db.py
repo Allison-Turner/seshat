@@ -376,7 +376,7 @@ def populate_itdk_db(db_file, itdk_csvs):
 
     cnxn.close()
 
-    print("{} Finished creating database".format(datetime.datetime.now()))
+    print("{} Finished creating ITDK tables".format(datetime.datetime.now()))
 
 
 def fetch_top_nodes(db_file, num_to_fetch):
@@ -586,7 +586,7 @@ def get_geo_links(db_file):
     return (link_ids, node_ids_1, addrs_1, lat_1, long_1, node_ids_2, addrs_2, lat_2, long_2)
 
 
-def get_asn_for_node_id(node_id, db_file):
+def get_asn_for_node_id(db_file, node_id):
     cnxn = sqlite3.connect(db_file)
     cursor = cnxn.cursor()
 
@@ -626,12 +626,39 @@ def create_meta_table(db_file):
     FROM node_outdegrees
     INNER JOIN map_node_to_asn ON node_outdegrees.node_id = map_node_to_asn.node_id
     INNER JOIN asn_org_names ON map_node_to_asn.as_number = asn_org_names.as_num
-    INNER JOIN map_node_to_geo ON node_outdegrees.node_id = map_node_to_geo.node_id
+    FULL OUTER JOIN map_node_to_geo ON node_outdegrees.node_id = map_node_to_geo.node_id
     """)
 
     cnxn.commit()
 
+    #cursor.execute("CREATE UNIQUE INDEX node_index ON meta_table(node_id);")
+
+    #cnxn.commit()
+
     cnxn.close()
+
+
+def get_meta_table_rows_for_node_ids(db_file, node_ids):
+    cnxn = sqlite3.connect(db_file)
+    cursor = cnxn.cursor()
+
+    placeholder = '?'
+    placeholder_seq = ', '.join(placeholder for n in node_ids)
+    query = "SELECT node_id, outdegree, as_number, org_name, latitude, longitude FROM meta_table WHERE node_id IN (%s)" % placeholder_seq
+
+    cursor.execute(query, node_ids)
+    rows = cursor.fetchall()
+
+    r_node_ids = [r[0] for r in rows]
+    outdegrees = [r[1] for r in rows]
+    as_numbers = [r[2] for r in rows]
+    org_names = [r[3] for r in rows]
+    latitudes = [r[4] for r in rows]
+    longitudes = [r[5] for r in rows]
+
+    cnxn.close()
+
+    return r_node_ids, outdegrees, as_numbers, org_names, latitudes, longitudes
 
 
 def __main__():
@@ -682,59 +709,13 @@ def __main__():
     #day = as2org_dt[6:]
     #as2org_date = year + "-" + month + "-" + day
     #as2org_db = config.AS2ORG_DB_DIR + "as2org." + as2org_date + ".db"
+    
     #populate_as2org_db(asn_outfile, org_outfile, midar_iff_db)
 
     create_meta_table(midar_iff_db)
 
 
-    """
-    top_nodes_file = config.DB_DIR + "top-outdegree." + "midar-iff-" + itdk_date + ".txt"
 
-    if os.path.isfile(top_nodes_file) is False:
-        top_nodes_and_outdegrees = calculate_top_nodes(midar_iff_db)
-        top_nodes = [r[0] for r in top_nodes_and_outdegrees]
-        top_node_outdegrees = [r[1] for r in top_nodes_and_outdegrees]
-    
-        with open(top_nodes_file, "w+") as outf:
-            for i in range(len(top_nodes)):
-                n = top_nodes[i]
-                d = top_node_outdegrees[i]
-
-                asn = get_asn_for_node_id(n, midar_iff_db)
-                org_name = get_org_name_for_as_number(asn, as2org_db)              
-
-                result = get_node_coords(midar_iff_db, n) 
-                if result is not None:
-                    lat = result[0]
-                    long = result[1]
-                else:
-                    lat = None
-                    long = None
-
-                outf.write("{},{},{},{},{},{}\n".format(n, d, asn, org_name, lat, long))
-
-    else:
-        with open(top_nodes_file, "r") as inf:
-            lines = inf.readlines()
-            top_nodes = [l.strip().split(",")[0] for l in lines]
-            top_outdegrees = [l.strip().split(",")[1] for l in lines]
-            top_asns = [l.strip().split(",")[2] for l in lines]
-            top_org_names =  [l.strip().split(",")[3] for l in lines]
-            top_lats = [l.strip().split(",")[4] for l in lines]
-            top_longs = [l.strip().split(",")[5] for l in lines]
-
-            for i in range(len(top_nodes)):
-                n = top_nodes[i]
-                d = top_outdegrees[i]
-                asn = top_asns[i]
-                org_name = top_org_names[i]      
-                lat =top_lats[i]
-                long = top_longs[i]
-
-                print("{},{},{},{},{},{}".format(n, d, asn, org_name, lat, long))
-
-
-    """
     
 """
 2023-05-25 18:21:06.370722 Downloading ITDK files from 2022-02

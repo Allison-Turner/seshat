@@ -2,7 +2,7 @@
 
 import config
 
-from db import get_all_node_coords, get_node_coords, get_links, get_geo_links, fetch_top_nodes, find_num_geo_nodes, find_num_non_geo_nodes, get_links_for_node, get_geo_links_for_node
+from db import get_all_node_coords, get_node_coords, get_links, get_geo_links, fetch_top_nodes, find_num_geo_nodes, find_num_non_geo_nodes, get_links_for_node, get_geo_links_for_node, get_meta_table_rows_for_node_ids
 
 from glob import glob
 import os, sys, json
@@ -18,9 +18,18 @@ css_colors = ['Aqua', 'Aquamarine', 'Blue', 'Indigo', 'Brown', 'CadetBlue', 'Cha
 
 itdk_dbs = glob(config.ITDK_DB_DIR + "*-itdk.db")
 
-itdk_versions = [os.path.basename(itdk_vsn).replace("-itdk.db", "") for itdk_vsn in itdk_dbs]
+itdk_versions = [""] + [os.path.basename(itdk_vsn).replace("-itdk.db", "") for itdk_vsn in itdk_dbs]
 
-#top_nodes_df = pd.read_csv(config.DB_DIR + "top-outdegree." + "midar-iff-2022-02" + ".txt", header=None, names=["node_id","outdegree","asn","org_name","latitude","longitude"])
+styles = {
+    'container': {
+        'display': 'grid',
+        'grid-template-rows': '1fr',
+        'grid-template-columns': '1fr 1fr 4fr'
+    },
+    'pre': {
+        'overflowX': 'wrap'
+    }
+}
 
 app = Dash(__name__)
 
@@ -35,24 +44,40 @@ app.layout = html.Div(children=[
         inline=True
     ),
 
+    html.Details(children=[
+        """
+        MIDAR and Speedtrap are internet measurement techniques for something called 'alias resolution'. 'Alias resolution' describes the process of determining which router addresses are actually interfaces of the same router, which gives us a dataset that more accurately represents real-world internet infrastructure.The most accurate datasets result from combining MIDAR or Speedtrap with Kapar or Iffinder.
+
+        The important difference between MIDAR and Speedtrap themselves is that MIDAR is used for IPv4, and Speedtrap is used for IPv6.
+        """,
+        html.Br(),html.Br(),
+        "For more information, check out these resources from CAIDA:",
+        html.Br(),
+        html.A(href="https://www.caida.org/catalog/datasets/internet-topology-data-kit/",children=["Macroscopic Internet Topology Data Kit (ITDK)"]),
+        html.Br(),
+        html.A(href="https://www.caida.org/catalog/software/midar/", children=["Monotonic ID-based Alias Resolution (MIDAR)"]),
+        html.Br(),
+        html.A(href="https://www.caida.org/catalog/software/kapar/", children=["kapar"]),
+        html.Br(),
+        html.A(href="https://www.caida.org/catalog/software/iffinder/", children=["iffinder"]),
+        html.Br(),
+        html.A(href="https://catalog.caida.org/paper/2013_speedtrap", children=["Speedtrap"]),
+        html.Summary(children=["What do 'midar' and 'speedtrap' mean?"])
+    ]),
+
     dcc.Slider(0, 1000000, 5000, value=5000, id='num_nodes', marks={0:'0', 100000:'100,000', 200000:'200,000', 300000:'300,000', 400000:'400,000', 500000:'500,000', 600000:'600,000', 700000:'700,000', 800000:'800,000', 900000:'900,000', 1000000:'1,000,000'}),
 
     dcc.Graph(id='topo-map'),
 
-    html.P(id="context-label"),
-
-    html.Pre(id='hover-data'),
-
-    html.Div(id='node_selected'),
-
-    html.Div(id='links_view'),
-
     dcc.Dropdown(['node_outdegree', 'org_name', 'no data coloring'], 'no data coloring', id='color_by'),
 
-    #dash_table.DataTable(id="table",
-    #    data=top_nodes_df.to_dict('records'),
-    #    columns=[{'id': c, 'name': c, } for c in top_nodes_df]
-    #),
+    html.P(id="context-label"),
+
+    html.Div(className='container', style=styles['container'], children=[
+        html.Pre(id='selected_node_data', style=styles['pre'], className='item'),
+        html.Pre(id='interface_addrs', style=styles['pre'], className='item'),
+        html.Div(id='connected_asns',className='item'),
+    ]),
 
 ])
 
@@ -78,10 +103,6 @@ def update_topo_map(itdk_versions, color_by, num_nodes):
 
 
     for itdk_vsn in itdk_versions:
-        #node_ids, latitudes, longitudes = get_all_node_coords(config.DB_DIR + itdk_vsn + "-itdk.db")
-        #node_coords_df = pd.DataFrame({'node_id': node_ids, 'latitude' : latitudes, 'longitude' : longitudes})
-        #fig = px.scatter_mapbox(lat=node_coords_df['latitude'], lon=node_coords_df['longitude'], hover_name=node_coords_df['node_id'])
-
         db_file = config.ITDK_DB_DIR + itdk_vsn + "-itdk.db"
 
         node_ids, outdegrees, asns, org_names, lats, longs = fetch_top_nodes(db_file, num_nodes)
@@ -142,33 +163,21 @@ def update_topo_map(itdk_versions, color_by, num_nodes):
     return fig, "{:,} nodes displayed out of {:,} mappable nodes, {:,} nodes not displayable on a map".format(total_pts_displayed, num_geo_nodes, num_non_geo_nodes)
 
 
-@app.callback(
-    Output('hover-data', 'children'),
-    Input('topo-map', 'hoverData'))
-def display_node_data_on_hover(hoverData):
-    if hoverData is not None:
-        #hover_action = json.loads(hoverData)
-        node_data = hoverData['points'][0]['customdata']
-        node_id = node_data[0]
-        outdegree = node_data[1]
-        asn = node_data[2]
-        org_name = node_data[3]
-        data_src = node_data[4]
-
-        return "Node ID: {}\nOutdegree: {}\nASN: {}\nOrg Name: {}".format(node_id, outdegree, asn, org_name)
-        #return json.dumps(hoverData, indent=2)
-
 
 @app.callback(
-    Output(component_id='links_view', component_property='children'),
+    [
+        Output(component_id='selected_node_data', component_property='children'),
+        Output(component_id='interface_addrs', component_property='children'),
+        Output(component_id='connected_asns', component_property='children'),
+     ],
     Input('topo-map', 'clickData'))
 def display_click_data(clickData):
     if clickData is not None:
         node_data = clickData['points'][0]['customdata']
         node_id = node_data[0]
-        #outdegree = node_data[1]
-        #asn = node_data[2]
-        #org_name = node_data[3]
+        outdegree = node_data[1]
+        asn = node_data[2]
+        org_name = node_data[3]
         data_src = node_data[4]
 
         #link_ids, node_ids_1, lat_1, long_1, addrs_1, node_ids_2, addrs_2, lat_2, long_2 = get_geo_links_for_node(data_src, node_id)
@@ -195,21 +204,21 @@ def display_click_data(clickData):
         })
 
         nodes = links_df.node_id_2.unique().tolist()
-        node_dicts = [{'data': {'id': str(x), 'label': str(x)}} for x in nodes]
-        edge_dicts = [{'data': {'source': str(node_id), 'target': str(y)}} for y in links_df.node_id_2]
+        addrs = links_df.addr_1.unique().tolist()
+        r_node_ids, outdegrees, as_numbers, org_names, latitudes, longitudes = get_meta_table_rows_for_node_ids(data_src, nodes)
+        neighbors_df = pd.DataFrame({
+            'node_id': r_node_ids,
+            'outdegree': outdegrees,
+            'as_number': as_numbers,
+            'org_name': org_names,
+            'latitude': latitudes,
+            'longitude': longitudes
+        })
 
-        return dash_cytoscape.Cytoscape(
-            id='links',
-            autoungrabify=True,
-            minZoom=0.2,
-            maxZoom=1,
-            style={'width': '100%', 'height': '500px'},
-            elements=[{'data': {'id': str(node_id), 'label': str(node_id)}}] + node_dicts + edge_dicts,
-            layout={'name': 'concentric'}
-        )
+        return "Node ID: {}\nOutdegree: {}\nASN: {}\nOrg Name: {}".format(node_id, outdegree, asn, org_name), "\n".join(addrs), dash_table.DataTable(id="table", data=neighbors_df.to_dict('records'), columns=[{'id': c, 'name': c, } for c in neighbors_df])
 
-    #return json.dumps(clickData, indent=2)
-    #return link_table
+    else:
+        return "", "", ""
 
 
 # view in browser at http://127.0.0.1:8050/
