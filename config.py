@@ -4,28 +4,22 @@ import os
 
 BASE_DIR = "/home/allison/Desktop/interactive-internet-topology/"
 
-ITDK_ARCHIVE_URL = "http://publicdata.caida.org/datasets/topology/ark/ipv4/itdk/"
+CAIDA_PUBLIC_DATA_BASE_URL = "http://publicdata.caida.org/datasets/"
+
+ITDK_ARCHIVE_URL = CAIDA_PUBLIC_DATA_BASE_URL + "topology/ark/ipv4/itdk/"
 ITDK_VERSION = "2022-02"
 ITDK_BASE_DIR = BASE_DIR + "ITDK/"
 ITDK_DOWNLOAD_TO_DIR = ITDK_BASE_DIR + "downloads/"
 ITDK_DB_DIR = ITDK_BASE_DIR + "db/"
 ITDK_CSV_DIR = ITDK_BASE_DIR + "csv/"
 
-LIST_TABLES_QUERY = """SELECT name FROM sqlite_master
-    WHERE type='table';"""
-# usage example:
-# cursor.execute(config.LIST_TABLES_QUERY)
-# print(cursor.fetchall())
-
-#FIG_DIR = "/home/allison/Desktop/ITDK/figures"
-
-AS2ORG_ARCHIVE_URL = "https://publicdata.caida.org/datasets/as-organizations/"
+AS2ORG_ARCHIVE_URL = CAIDA_PUBLIC_DATA_BASE_URL + "as-organizations/"
 AS2ORG_BASE_DIR = BASE_DIR + "AS2Org/"
 AS2ORG_DOWNLOAD_TO_DIR = AS2ORG_BASE_DIR + "downloads/"
 AS2ORG_DB_DIR = AS2ORG_BASE_DIR + "db/"
 AS2ORG_CSV_DIR = AS2ORG_BASE_DIR + "csv/"
 
-AS_RELATIONSHIPS_ARCHIVE_URL = "https://publicdata.caida.org/datasets/as-organizations/"
+AS_RELATIONSHIPS_ARCHIVE_URL = CAIDA_PUBLIC_DATA_BASE_URL + "as-relationships/"
 
 
 def initialize_directories():
