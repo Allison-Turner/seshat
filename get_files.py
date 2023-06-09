@@ -58,6 +58,24 @@ def get_links_from_html_page(web_page_url):
     return links_on_page
 
 
+
+def find_files_and_dirs_on_html_page(web_page_url):
+    links = get_links_from_html_page(web_page_url)
+
+    file_links = set([])
+    dir_links = set([])
+    
+    for l in links:
+        if '.' in l:
+            file_links.add(l)
+
+        else:
+            dir_links.add(l)
+
+    return (file_links, dir_links)
+
+
+
 def get_contemporary_as2org_release_for_itdk_version(itdk_release_date, as2org_archive_url, download_dir):
     fields = itdk_release_date.split("-")
     itdk_release_year = int(fields[0])
@@ -111,19 +129,32 @@ def get_contemporary_as2org_release_for_itdk_version(itdk_release_date, as2org_a
     return decompress_file(download_dir + file_name)
 
 
+def get_available_dataset_releases(archive_url):
+    dataset_releases = get_links_from_html_page(archive_url)
 
-def get_itdk_files(base_archive_url, download_dir):
-    itdk_releases = get_links_from_html_page(base_archive_url)
+    return dataset_releases
 
-    latest_release = itdk_releases[-1]
 
-    print("{} Downloading ITDK files from {}".format(datetime.datetime.now(), latest_release))
+def check_for_local_archive_files(download_dir):
+    archive_versions = glob.glob(download_dir + '*/')
 
-    latest_version_url = base_archive_url + "/" + latest_release
+    archive_files = {}
 
-    available_files = get_links_from_html_page(latest_version_url)
+    for v in archive_versions:
+        files = glob.glob(v + '*.*')
 
-    itdk_dir = download_dir + latest_release + "/"
+        ym_date = v.replace(download_dir, "").replace("/", "")
+
+        archive_files[ym_date] = files
+
+    return archive_files
+
+
+
+def check_for_files_to_download(base_archive_url, archive_date, download_dir):
+    available_files = get_links_from_html_page(base_archive_url + "/" + archive_date)
+
+    itdk_dir = download_dir + archive_date + "/"
 
     if not os.path.exists(itdk_dir):
         os.mkdir(itdk_dir)
@@ -141,10 +172,38 @@ def get_itdk_files(base_archive_url, download_dir):
         if match_found is False:
             files_to_get.append(af)
 
+    return files_to_get
+
+
+
+def check_download_status_for_each_itdk_version(itdk_archive_url, itdk_download_dir):
+    itdk_releases = get_available_dataset_releases(itdk_archive_url)
+
+    download_status = {}
+
+    for archive_date in itdk_releases:
+        missing_files = check_for_files_to_download(itdk_archive_url, archive_date, itdk_download_dir)
+
+        if len(missing_files) > 0:
+            download_status[archive_date] = False
+        else:
+            download_status[archive_date] = True
+
+    return download_status
+
+
+
+def get_itdk_files(base_archive_url, archive_date, download_dir):
+    print("{} Downloading ITDK files from {}".format(datetime.datetime.now(), archive_date))
+
+    itdk_dir = download_dir + archive_date + "/"
+    
+    files_to_get = check_for_files_to_download(base_archive_url, archive_date, download_dir)
+
     for f in files_to_get:
-        get_file_by_url(latest_version_url + "/" + f, itdk_dir + f)
+        get_file_by_url(base_archive_url + archive_date + "/" + f, itdk_dir + f)
         decompress_file(itdk_dir + f)
 
     print("{} Finished downloading and decompressing latest ITDK edition files".format(datetime.datetime.now()))
 
-    return latest_release, glob.glob(itdk_dir + "*.*")
+    return glob.glob(itdk_dir + "*.*")
